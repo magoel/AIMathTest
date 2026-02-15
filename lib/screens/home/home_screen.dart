@@ -13,6 +13,21 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeProfileProvider);
     final attemptsAsync = ref.watch(attemptsProvider);
+    final profilesAsync = ref.watch(profilesProvider);
+
+    // Show loading while profiles load
+    if (profilesAsync.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Redirect to onboarding only when profiles have loaded and are empty
+    final profiles = profilesAsync.valueOrNull ?? [];
+    if (profiles.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.go('/onboarding');
+      });
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),

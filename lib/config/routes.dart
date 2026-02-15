@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
-import '../providers/profile_provider.dart';
 import '../screens/landing/landing_screen.dart';
 import '../screens/onboarding/onboarding_profile_screen.dart';
 import '../screens/onboarding/onboarding_config_screen.dart';
@@ -22,7 +21,6 @@ import '../screens/shared/shared_test_screen.dart';
 class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier(Ref ref) {
     ref.listen(authStateProvider, (prev, next) => notifyListeners());
-    ref.listen(profilesProvider, (prev, next) => notifyListeners());
   }
 }
 
@@ -47,23 +45,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Logged in, on landing page → redirect to home or onboarding
-      if (location == '/') {
-        final profilesState = ref.read(profilesProvider);
-        final profiles = profilesState.valueOrNull;
-        if (profiles == null) return '/home';
-        if (profiles.isEmpty) return '/onboarding';
-        return '/home';
-      }
-
-      // Logged in, going to /home but no profiles → onboarding
-      if (location == '/home') {
-        final profilesState = ref.read(profilesProvider);
-        final profiles = profilesState.valueOrNull;
-        if (profiles != null && profiles.isEmpty) {
-          return '/onboarding';
-        }
-      }
+      // Logged in, on landing page → always go to home
+      if (location == '/') return '/home';
 
       return null;
     },
