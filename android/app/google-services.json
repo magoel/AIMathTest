@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "299048422905",
+    "project_id": "aimathtest-kids-3ca24",
+    "storage_bucket": "aimathtest-kids-3ca24.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:299048422905:android:cea4b9bfa6581159368128",
+        "android_client_info": {
+          "package_name": "com.aimathtest.aimathtest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_kz5Ewci6f-7iolTTGuGddMkHUhITOBo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

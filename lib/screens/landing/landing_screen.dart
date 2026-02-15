@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../config/app_config.dart';
 import '../../config/constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/common/app_button.dart';
@@ -17,8 +18,11 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   Future<void> _signIn() async {
     setState(() => _isLoading = true);
     try {
-      final authService = ref.read(localAuthServiceProvider);
-      await authService.signInWithGoogle();
+      if (AppConfig.useFirebase) {
+        await ref.read(firebaseAuthServiceProvider).signInWithGoogle();
+      } else {
+        await ref.read(localAuthServiceProvider).signInWithGoogle();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

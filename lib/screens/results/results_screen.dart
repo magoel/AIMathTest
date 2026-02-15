@@ -152,7 +152,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     icon: Icons.share,
                     isOutlined: true,
                     onPressed: () {
-                      Share.share('Try this math test! Code: ${_test!.shareCode}');
+                      final url = 'https://aimathtest-kids-3ca24.web.app/shared/${_test!.shareCode}';
+                      Share.share('Try this math test!\n$url');
                     },
                   ),
                 ),

@@ -1,4 +1,5 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -7,6 +8,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore();
+const geminiApiKey = defineSecret("GEMINI_API_KEY");
 
 interface GenerateTestRequest {
   profileId: string;
@@ -34,25 +36,18 @@ function generateShareCode(): string {
   return `MATH-${code}`;
 }
 
-export const generateTest = functions.https.onCall(
-  async (request: functions.https.CallableRequest<GenerateTestRequest>) => {
-    // Verify authentication
+export const generateTest = onCall(
+  { secrets: [geminiApiKey] },
+  async (request) => {
     if (!request.auth) {
-      throw new functions.https.HttpsError(
-        "unauthenticated",
-        "Must be logged in"
-      );
+      throw new HttpsError("unauthenticated", "Must be logged in");
     }
 
     const { profileId, grade, topics, difficulty, questionCount, timed } =
-      request.data;
+      request.data as GenerateTestRequest;
 
-    // Validate input
     if (!topics || topics.length === 0) {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "At least one topic required"
-      );
+      throw new HttpsError("invalid-argument", "At least one topic required");
     }
 
     const parentId = request.auth.uid;
@@ -67,8 +62,8 @@ export const generateTest = functions.https.onCall(
       .get();
 
     // Analyze weak areas
-    let weakTopics: string[] = [];
-    let strongTopics: string[] = [];
+    const weakTopics: string[] = [];
+    const strongTopics: string[] = [];
     const topicScores: Record<string, number[]> = {};
 
     for (const doc of recentAttempts.docs) {
@@ -91,42 +86,39 @@ export const generateTest = functions.https.onCall(
     const gradeLabel = grade === 0 ? "Kindergarten" : `Grade ${grade}`;
     const prompt = `You are a math test generator for a ${gradeLabel} student.
 
-Generate ${questionCount} math problems with these requirements:
+Generate exactly ${questionCount} math problems with these requirements:
 - Topics: ${topics.join(", ")}
 - Difficulty level: ${difficulty}/10
-- Format: Fill-in-the-blank with numeric answers
-
-${weakTopics.length > 0 ? `Student's weak areas: ${weakTopics.join(", ")}` : ""}
-${strongTopics.length > 0 ? `Student's strong areas: ${strongTopics.join(", ")}` : ""}
+- Format: Fill-in-the-blank with numeric answers only
+${weakTopics.length > 0 ? `\nStudent's weak areas: ${weakTopics.join(", ")}` : ""}
+${strongTopics.length > 0 ? `\nStudent's strong areas: ${strongTopics.join(", ")}` : ""}
 
 Include:
 - ${weakTopics.length > 0 ? "30% problems targeting weak areas" : "Balanced mix of problems"}
 - 50% problems at requested difficulty
 - 20% slightly challenging problems
 
-Return ONLY a JSON array (no markdown, no code blocks):
-[
-  {
-    "question": "24 × 15 = ?",
-    "answer": "360",
-    "topic": "multiplication"
-  }
-]`;
+Return ONLY a valid JSON array with no extra text, no markdown, no code fences:
+[{"question":"24 × 15 = ?","answer":"360","topic":"multiplication"}]`;
 
     try {
-      // Call Gemini API
-      const apiKey = process.env.GEMINI_API_KEY || "";
+      const apiKey = geminiApiKey.value();
       if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not configured");
+        throw new Error("GEMINI_API_KEY secret not configured");
       }
 
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
+        },
+      });
 
       const result = await model.generateContent(prompt);
       const text = result.response.text();
 
-      // Parse response - strip markdown code fences if present
+      // Parse response
       let jsonStr = text.trim();
       if (jsonStr.startsWith("```")) {
         jsonStr = jsonStr
@@ -136,23 +128,20 @@ Return ONLY a JSON array (no markdown, no code blocks):
 
       const parsed = JSON.parse(jsonStr);
 
-      // Build questions
       const questions: Question[] = parsed.map(
         (q: { question: string; answer: string; topic: string }, i: number) => ({
           id: `q${i + 1}`,
           type: "fill_in_blank",
           question: q.question,
-          correctAnswer: q.answer,
+          correctAnswer: String(q.answer),
           topic: q.topic,
         })
       );
 
-      // Generate test ID and share code
+      // Save test to Firestore
       const testRef = db.collection("tests").doc();
       const testId = testRef.id;
       const shareCode = generateShareCode();
-
-      // Save test to Firestore
       const now = admin.firestore.Timestamp.now();
       const expiresAt = admin.firestore.Timestamp.fromDate(
         new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
@@ -160,24 +149,11 @@ Return ONLY a JSON array (no markdown, no code blocks):
 
       await testRef.set({
         shareCode,
-        createdBy: {
-          parentId,
-          profileId,
-          profileName: "",
-        },
-        config: {
-          topics,
-          difficulty,
-          questionCount,
-          timed,
-          timeLimitSeconds: timed ? questionCount * 60 : null,
-        },
+        createdBy: { parentId, profileId, profileName: "" },
+        config: { topics, difficulty, questionCount, timed, timeLimitSeconds: timed ? questionCount * 60 : null },
         questions: questions.map((q) => ({
-          id: q.id,
-          type: q.type,
-          question: q.question,
-          correctAnswer: q.correctAnswer,
-          topic: q.topic,
+          id: q.id, type: q.type, question: q.question,
+          correctAnswer: q.correctAnswer, topic: q.topic,
         })),
         createdAt: now,
         expiresAt,
@@ -186,9 +162,8 @@ Return ONLY a JSON array (no markdown, no code blocks):
       return { testId, shareCode, questions };
     } catch (error: unknown) {
       console.error("Error generating test:", error);
-      const message =
-        error instanceof Error ? error.message : "Unknown error";
-      throw new functions.https.HttpsError("internal", message);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      throw new HttpsError("internal", message);
     }
   }
 );

@@ -2,11 +2,18 @@
   "hosting": {
     "public": "build/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
+    "headers": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "**/*.html",
+        "headers": [{"key": "Cache-Control", "value": "no-cache"}]
+      },
+      {
+        "source": "flutter_bootstrap.js",
+        "headers": [{"key": "Cache-Control", "value": "no-cache"}]
       }
+    ],
+    "rewrites": [
+      {"source": "**", "destination": "/index.html"}
     ]
   },
   "firestore": {
@@ -19,5 +26,25 @@
       "codebase": "default",
       "ignore": ["node_modules", ".git", "firebase-debug.log"]
     }
-  ]
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "aimathtest-kids-3ca24",
+          "appId": "1:299048422905:android:cea4b9bfa6581159368128",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "aimathtest-kids-3ca24",
+          "configurations": {
+            "android": "1:299048422905:android:cea4b9bfa6581159368128",
+            "web": "1:299048422905:web:7b4ab81e333ee47c368128"
+          }
+        }
+      }
+    }
+  }
 }

@@ -1,13 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "tests",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "expiresAt", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "attempts",
       "queryScope": "COLLECTION",
       "fields": [

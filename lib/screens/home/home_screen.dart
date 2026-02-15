@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
-import '../../providers/user_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../config/constants.dart';
 
@@ -14,15 +13,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeProfileProvider);
     final attemptsAsync = ref.watch(attemptsProvider);
-    final userAsync = ref.watch(userProvider);
-
-    // Check if onboarding is needed
-    final user = userAsync.valueOrNull;
-    if (user != null && !user.onboardingCompleted && profile == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/onboarding');
-      });
-    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -42,8 +32,17 @@ class HomeScreen extends ConsumerWidget {
           AppButton(
             label: 'Start New Test',
             icon: Icons.rocket_launch,
-            onPressed: () => context.go('/new-test'),
+            onPressed: profile != null ? () => context.go('/new-test') : null,
           ),
+          if (profile == null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Create a child profile first in Settings',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey,
+              ),
+            ),
+          ],
           const SizedBox(height: 28),
 
           // Recent Tests

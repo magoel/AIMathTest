@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../providers/profile_provider.dart';
 import '../screens/landing/landing_screen.dart';
 import '../screens/onboarding/onboarding_profile_screen.dart';
 import '../screens/onboarding/onboarding_config_screen.dart';
@@ -13,25 +15,56 @@ import '../screens/progress/progress_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/settings/profile_selector_screen.dart';
 import '../screens/home/main_shell.dart';
+import '../screens/shared/shared_test_screen.dart';
+
+/// Notifier that triggers GoRouter redirect re-evaluation
+/// without recreating the entire router.
+class RouterRefreshNotifier extends ChangeNotifier {
+  RouterRefreshNotifier(Ref ref) {
+    ref.listen(authStateProvider, (prev, next) => notifyListeners());
+    ref.listen(profilesProvider, (prev, next) => notifyListeners());
+  }
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final refreshNotifier = RouterRefreshNotifier(ref);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      // Read current values (not watch — we use refreshListenable instead)
+      final authState = ref.read(authStateProvider);
       final isLoggedIn = authState.valueOrNull != null;
-      final isLoading = authState.isLoading;
+      final isAuthLoading = authState.isLoading;
       final location = state.matchedLocation;
 
-      if (isLoading) return null;
+      if (isAuthLoading) return null;
 
+      // Not logged in → landing page (except allow shared links)
       if (!isLoggedIn) {
         if (location != '/') return '/';
         return null;
       }
 
-      if (location == '/') return '/home';
+      // Logged in, on landing page → redirect to home or onboarding
+      if (location == '/') {
+        final profilesState = ref.read(profilesProvider);
+        final profiles = profilesState.valueOrNull;
+        if (profiles == null) return '/home';
+        if (profiles.isEmpty) return '/onboarding';
+        return '/home';
+      }
+
+      // Logged in, going to /home but no profiles → onboarding
+      if (location == '/home') {
+        final profilesState = ref.read(profilesProvider);
+        final profiles = profilesState.valueOrNull;
+        if (profiles != null && profiles.isEmpty) {
+          return '/onboarding';
+        }
+      }
+
       return null;
     },
     routes: [
@@ -75,6 +108,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const SettingsScreen(),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/shared/:shareCode',
+        builder: (context, state) => SharedTestScreen(
+          shareCode: state.pathParameters['shareCode']!,
+        ),
       ),
       GoRoute(
         path: '/onboarding/test/:testId',

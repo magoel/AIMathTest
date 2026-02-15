@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/app_config.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
@@ -39,7 +40,6 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
       if (user == null || profile == null) throw Exception('Not authenticated');
 
       final ai = ref.read(aiServiceProvider);
-      final db = ref.read(databaseServiceProvider);
 
       final test = await ai.generateTest(
         parentId: user.uid,
@@ -52,11 +52,16 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
         timed: _timed,
       );
 
-      await db.saveTest(test);
+      // Cloud Function already saves to Firestore; save locally only in local mode
+      if (!AppConfig.useFirebase) {
+        final db = ref.read(databaseServiceProvider);
+        await db.saveTest(test);
+      }
       ref.read(currentTestProvider.notifier).state = test;
 
       if (mounted) context.push('/test/${test.id}');
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('Test generation error: $e\n$stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to generate test: $e')),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/app_config.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/user_provider.dart';
@@ -135,7 +136,11 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 );
                 if (confirmed == true) {
-                  await ref.read(localAuthServiceProvider).signOut();
+                  if (AppConfig.useFirebase) {
+                    await ref.read(firebaseAuthServiceProvider).signOut();
+                  } else {
+                    await ref.read(localAuthServiceProvider).signOut();
+                  }
                 }
               },
               icon: const Icon(Icons.logout, color: Colors.red),

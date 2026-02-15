@@ -144,14 +144,36 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
           ? recentAttempts.map((a) => a.percentage).reduce((a, b) => a + b) / totalTests
           : 0.0;
 
+      // Calculate streak: only increment if last test was on a different day
+      final now = DateTime.now();
+      final lastTest = profile.stats.lastTestAt;
+      int newStreak;
+      if (lastTest == null) {
+        newStreak = 1;
+      } else {
+        final lastDate = DateTime(lastTest.year, lastTest.month, lastTest.day);
+        final today = DateTime(now.year, now.month, now.day);
+        final daysDiff = today.difference(lastDate).inDays;
+        if (daysDiff == 0) {
+          // Same day — keep current streak
+          newStreak = profile.stats.currentStreak;
+        } else if (daysDiff == 1) {
+          // Consecutive day — increment
+          newStreak = profile.stats.currentStreak + 1;
+        } else {
+          // Gap — reset to 1
+          newStreak = 1;
+        }
+      }
+
       await db.updateProfileStats(
         user.uid,
         profile.id,
         ProfileStats(
           totalTests: totalTests,
           averageScore: avgScore,
-          currentStreak: profile.stats.currentStreak + 1,
-          lastTestAt: DateTime.now(),
+          currentStreak: newStreak,
+          lastTestAt: now,
         ),
       );
 

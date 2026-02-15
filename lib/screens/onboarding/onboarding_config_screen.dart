@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../config/app_config.dart';
 import '../../config/constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
@@ -43,7 +44,6 @@ class _OnboardingConfigScreenState
       _difficulty = (profile.grade).clamp(1, 10);
 
       final ai = ref.read(aiServiceProvider);
-      final db = ref.read(databaseServiceProvider);
 
       final test = await ai.generateTest(
         parentId: user.uid,
@@ -56,7 +56,10 @@ class _OnboardingConfigScreenState
         timed: false,
       );
 
-      await db.saveTest(test);
+      if (!AppConfig.useFirebase) {
+        final db = ref.read(databaseServiceProvider);
+        await db.saveTest(test);
+      }
       ref.read(currentTestProvider.notifier).state = test;
 
       if (mounted) context.push('/onboarding/test/${test.id}');

@@ -1,15 +1,17 @@
 import 'dart:math';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/question_model.dart';
 import '../models/test_model.dart';
 import '../models/attempt_model.dart';
+import '../config/app_config.dart';
 import '../config/constants.dart';
 
 class AIService {
   final _uuid = const Uuid();
 
-  /// Generate a test locally with grade-appropriate math problems.
-  /// When Firebase Cloud Functions are deployed, this can call Gemini API instead.
+  /// Generate a test via Cloud Function (Gemini Flash) with local fallback.
   Future<TestModel> generateTest({
     required String parentId,
     required String profileId,
@@ -21,9 +23,25 @@ class AIService {
     required bool timed,
     List<AttemptModel>? recentAttempts,
   }) async {
-    // Small delay to simulate generation
-    await Future.delayed(const Duration(milliseconds: 300));
+    // Try Cloud Function (Gemini) when Firebase is enabled
+    if (AppConfig.useFirebase) {
+      try {
+        return await _generateViaCloudFunction(
+          parentId: parentId,
+          profileId: profileId,
+          profileName: profileName,
+          grade: grade,
+          topics: topics,
+          difficulty: difficulty,
+          questionCount: questionCount,
+          timed: timed,
+        );
+      } catch (e) {
+        debugPrint('Cloud Function failed, falling back to local: $e');
+      }
+    }
 
+    // Fallback: generate locally
     return _generateLocally(
       parentId: parentId,
       profileId: profileId,
@@ -36,6 +54,59 @@ class AIService {
     );
   }
 
+  /// Call the generateTest Cloud Function (which calls Gemini 1.5 Flash).
+  Future<TestModel> _generateViaCloudFunction({
+    required String parentId,
+    required String profileId,
+    required String profileName,
+    required int grade,
+    required List<String> topics,
+    required int difficulty,
+    required int questionCount,
+    required bool timed,
+  }) async {
+    final callable = FirebaseFunctions.instance.httpsCallable('generateTest');
+    final result = await callable.call({
+      'profileId': profileId,
+      'grade': grade,
+      'topics': topics,
+      'difficulty': difficulty,
+      'questionCount': questionCount,
+      'timed': timed,
+    });
+
+    final data = result.data as Map<String, dynamic>;
+    final questions = (data['questions'] as List<dynamic>)
+        .map((q) => QuestionModel.fromMap(q as Map<String, dynamic>))
+        .toList();
+
+    final testId = data['testId'] as String;
+    final shareCode = data['shareCode'] as String;
+
+    return TestModel(
+      id: testId,
+      shareCode: shareCode,
+      createdBy: TestCreatedBy(
+        parentId: parentId,
+        profileId: profileId,
+        profileName: profileName,
+      ),
+      config: TestConfig(
+        topics: topics,
+        difficulty: difficulty,
+        questionCount: questionCount,
+        timed: timed,
+        timeLimitSeconds: timed ? questionCount * 60 : null,
+      ),
+      questions: questions,
+      createdAt: DateTime.now(),
+      expiresAt: DateTime.now().add(
+        const Duration(days: AppConstants.testExpiryDays),
+      ),
+    );
+  }
+
+  /// Local fallback test generation (no API needed).
   TestModel _generateLocally({
     required String parentId,
     required String profileId,
@@ -86,13 +157,9 @@ class AIService {
   }
 
   Map<String, String> _generateQuestion(
-    String topic,
-    int difficulty,
-    int grade,
-    Random random,
+    String topic, int difficulty, int grade, Random random,
   ) {
     final maxNum = (difficulty * 5) + (grade * 3) + 5;
-
     switch (topic) {
       case 'addition':
         final a = random.nextInt(maxNum) + 1;
@@ -117,15 +184,9 @@ class AIService {
         final num2 = random.nextInt(denom) + 1;
         final sum = num1 + num2;
         if (sum % denom == 0) {
-          return {
-            'question': '$num1/$denom + $num2/$denom = ?',
-            'answer': '${sum ~/ denom}',
-          };
+          return {'question': '$num1/$denom + $num2/$denom = ?', 'answer': '${sum ~/ denom}'};
         }
-        return {
-          'question': '$num1/$denom + $num2/$denom = ?',
-          'answer': '$sum/$denom',
-        };
+        return {'question': '$num1/$denom + $num2/$denom = ?', 'answer': '$sum/$denom'};
       case 'decimals':
         final a = (random.nextInt(maxNum * 10) + 1) / 10.0;
         final b = (random.nextInt(maxNum * 10) + 1) / 10.0;
@@ -143,17 +204,11 @@ class AIService {
         return {'question': 'x + $b = $result, x = ?', 'answer': '$x'};
       case 'geometry':
         final side = random.nextInt(maxNum ~/ 2) + 1;
-        return {
-          'question': 'Perimeter of a square with side $side = ?',
-          'answer': '${side * 4}',
-        };
+        return {'question': 'Perimeter of a square with side $side = ?', 'answer': '${side * 4}'};
       case 'word_problems':
         final a = random.nextInt(maxNum) + 1;
         final b = random.nextInt(maxNum) + 1;
-        return {
-          'question': 'Sam has $a apples and gets $b more. How many total?',
-          'answer': '${a + b}',
-        };
+        return {'question': 'Sam has $a apples and gets $b more. How many total?', 'answer': '${a + b}'};
       default:
         final a = random.nextInt(maxNum) + 1;
         final b = random.nextInt(maxNum) + 1;
@@ -164,8 +219,7 @@ class AIService {
   String _generateShareCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final random = Random();
-    final code =
-        List.generate(5, (_) => chars[random.nextInt(chars.length)]).join();
+    final code = List.generate(5, (_) => chars[random.nextInt(chars.length)]).join();
     return 'MATH-$code';
   }
 }
