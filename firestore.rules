@@ -52,11 +52,12 @@ service cloud.firestore {
     }
 
     // Attempts — users can only read/write their own attempts
+    // Attempts are immutable once created (no updates allowed)
     // The query must filter by parentId matching the authenticated user
     match /attempts/{attemptId} {
       allow create: if request.auth != null
         && request.resource.data.parentId == request.auth.uid
-        && request.resource.data.keys().hasAll(['parentId', 'profileId', 'testId', 'completedAt', 'score', 'totalQuestions', 'percentage'])
+        && request.resource.data.keys().hasAll(['parentId', 'profileId', 'testId', 'completedAt', 'score', 'totalQuestions', 'percentage', 'timeTaken'])
         && isValidString(request.resource.data.profileId, 100)
         && isValidString(request.resource.data.testId, 100)
         && isValidNumber(request.resource.data.score, 0, 10000)
@@ -65,11 +66,7 @@ service cloud.firestore {
         && isValidNumber(request.resource.data.timeTaken, 0, 86400); // Max 24 hours (86400 seconds)
       allow read: if request.auth != null
         && resource.data.parentId == request.auth.uid;
-      allow update: if request.auth != null
-        && resource.data.parentId == request.auth.uid
-        && request.resource.data.parentId == request.auth.uid
-        && isValidNumber(request.resource.data.score, 0, 10000)
-        && isValidNumber(request.resource.data.percentage, 0, 100);
+      // No update allowed - attempts are immutable
       allow delete: if request.auth != null
         && resource.data.parentId == request.auth.uid;
     }
