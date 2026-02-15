@@ -89,9 +89,7 @@ class HomeScreen extends ConsumerWidget {
                   return Card(
                     child: ListTile(
                       title: Text(topicLabels),
-                      subtitle: Text(
-                        '${attempt.completedAt.month}/${attempt.completedAt.day}',
-                      ),
+                      subtitle: Text(_timeAgo(attempt.completedAt)),
                       trailing: Text(
                         '${attempt.percentage.round()}%',
                         style: TextStyle(
@@ -139,5 +137,14 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _timeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    if (diff.inDays < 30) return '${diff.inDays} days ago';
+    return '${date.month}/${date.day}/${date.year}';
   }
 }

@@ -100,5 +100,6 @@ class AttemptModel {
     'isRetake': isRetake,
     'previousAttemptId': previousAttemptId,
     'completedAt': Timestamp.fromDate(completedAt),
+    'testTopics': testTopics,
   };
 }

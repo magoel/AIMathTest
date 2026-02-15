@@ -82,22 +82,28 @@ class ProgressScreen extends ConsumerWidget {
                 );
               }
 
-              // Calculate per-topic scores
-
-              // Deduplicate: only count each attempt once per topic
+              // Calculate per-topic scores from attempt answers
               final topicAvg = <String, double>{};
               final topicCounts = <String, int>{};
               for (final attempt in attempts) {
-                if (attempt.testTopics != null) {
+                // Use testTopics if available
+                if (attempt.testTopics != null && attempt.testTopics!.isNotEmpty) {
                   for (final topic in attempt.testTopics!) {
                     topicAvg[topic] = (topicAvg[topic] ?? 0) + attempt.percentage;
                     topicCounts[topic] = (topicCounts[topic] ?? 0) + 1;
                   }
+                } else {
+                  // Fallback: count as "general" so tests still appear
+                  topicAvg['general'] = (topicAvg['general'] ?? 0) + attempt.percentage;
+                  topicCounts['general'] = (topicCounts['general'] ?? 0) + 1;
                 }
               }
               for (final topic in topicAvg.keys.toList()) {
                 topicAvg[topic] = topicAvg[topic]! / topicCounts[topic]!;
               }
+              // Remove the fallback "general" bucket if real topics exist
+              if (topicAvg.length > 1) topicAvg.remove('general');
+              topicCounts.remove('general');
 
               if (topicAvg.isEmpty) {
                 return const Card(
