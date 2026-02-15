@@ -1,0 +1,293 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/profile_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../config/constants.dart';
+import '../../widgets/avatar_picker.dart';
+
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profilesAsync = ref.watch(profilesProvider);
+    final authState = ref.watch(authStateProvider);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Profiles section
+          Text(
+            'PROFILES',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          profilesAsync.when(
+            data: (profiles) => Card(
+              child: Column(
+                children: [
+                  ...profiles.map((profile) => ListTile(
+                    leading: Text(profile.avatar, style: const TextStyle(fontSize: 28)),
+                    title: Text(profile.name),
+                    subtitle: Text(AppConstants.gradeLabels[profile.grade]),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _showEditProfileDialog(context, ref, profile),
+                    ),
+                  )),
+                  ListTile(
+                    leading: const Icon(Icons.add_circle_outline),
+                    title: const Text('Add New Profile'),
+                    onTap: () => context.push('/select-profile'),
+                  ),
+                ],
+              ),
+            ),
+            loading: () => const CircularProgressIndicator(),
+            error: (e, _) => Text('Error: $e'),
+          ),
+
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.swap_horiz),
+              title: const Text('Switch Profile'),
+              onTap: () => context.push('/select-profile'),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Account section
+          Text(
+            'ACCOUNT',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Signed in as'),
+              subtitle: Text(authState.valueOrNull?.email ?? 'Unknown'),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Subscription section
+          Text(
+            'SUBSCRIPTION',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.diamond_outlined),
+              title: const Text('Free Plan'),
+              subtitle: const Text('5 tests per day'),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sign out
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Sign Out?'),
+                    content: const Text('Are you sure you want to sign out?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Sign Out'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  await ref.read(localAuthServiceProvider).signOut();
+                }
+              },
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+                minimumSize: const Size(double.infinity, 56),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, WidgetRef ref, profile) {
+    showDialog(
+      context: context,
+      builder: (_) => _EditProfileDialog(ref: ref, profile: profile),
+    );
+  }
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  final WidgetRef ref;
+  final dynamic profile;
+
+  const _EditProfileDialog({required this.ref, required this.profile});
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  late TextEditingController _nameController;
+  late String _avatar;
+  late int _grade;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.profile.name);
+    _avatar = widget.profile.avatar;
+    _grade = widget.profile.grade;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_nameController.text.trim().isEmpty) return;
+    setState(() => _saving = true);
+    try {
+      final db = widget.ref.read(databaseServiceProvider);
+      await db.updateProfile(widget.profile.copyWith(
+        name: _nameController.text.trim(),
+        avatar: _avatar,
+        grade: _grade,
+      ));
+      if (mounted) Navigator.of(context).pop();
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Profile?'),
+        content: Text('Delete ${widget.profile.name}? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final db = widget.ref.read(databaseServiceProvider);
+      await db.deleteProfile(widget.profile.parentId, widget.profile.id);
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Edit Profile'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Choose Avatar'),
+            const SizedBox(height: 8),
+            AvatarPicker(
+              selected: _avatar,
+              onChanged: (v) => setState(() => _avatar = v),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: "Child's Name"),
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              initialValue: _grade,
+              decoration: const InputDecoration(labelText: 'Grade Level'),
+              items: List.generate(13, (i) {
+                return DropdownMenuItem(
+                  value: i,
+                  child: Text(AppConstants.gradeLabels[i]),
+                );
+              }),
+              onChanged: (v) => setState(() => _grade = v ?? _grade),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _delete,
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+        const Spacer(),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _saving ? null : _save,
+          child: _saving
+              ? const SizedBox(
+                  width: 20, height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save'),
+        ),
+      ],
+    );
+  }
+}

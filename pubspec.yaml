@@ -1,0 +1,48 @@
+name: aimathtest
+description: "AI-powered math test generator for kids K-12"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.4
+  cloud_firestore: ^5.6.7
+  cloud_functions: ^5.3.4
+  firebase_analytics: ^11.5.2
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # UI
+  google_fonts: ^6.2.1
+  fl_chart: ^0.70.2
+
+  # Auth
+  google_sign_in: ^6.2.2
+
+  # Utils
+  uuid: ^4.5.1
+  intl: ^0.20.2
+  share_plus: ^10.1.4
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
