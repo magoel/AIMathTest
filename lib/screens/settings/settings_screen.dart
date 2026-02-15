@@ -264,90 +264,74 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Edit Profile',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text('Choose Avatar',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                AvatarPicker(
-                  selected: _avatar,
-                  onChanged: (v) => setState(() => _avatar = v),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: "Child's Name"),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<int>(
-                  value: _grade,
-                  decoration: const InputDecoration(labelText: 'Grade Level'),
-                  items: List.generate(13, (i) {
-                    return DropdownMenuItem(
-                      value: i,
-                      child: Text(AppConstants.gradeLabels[i]),
-                    );
-                  }),
-                  onChanged: (v) => setState(() => _grade = v ?? _grade),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: _delete,
-                      child: const Text('Delete',
-                          style: TextStyle(color: Colors.red)),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _saving ? null : _save,
-                          child: _saving
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Save'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+    return AlertDialog(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Edit Profile'),
+          IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 400,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Choose Avatar',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              AvatarPicker(
+                selected: _avatar,
+                onChanged: (v) => setState(() => _avatar = v),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: "Child's Name"),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                value: _grade,
+                decoration: const InputDecoration(labelText: 'Grade Level'),
+                items: List.generate(13, (i) {
+                  return DropdownMenuItem(
+                    value: i,
+                    child: Text(AppConstants.gradeLabels[i]),
+                  );
+                }),
+                onChanged: (v) => setState(() => _grade = v ?? _grade),
+              ),
+            ],
           ),
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: _delete,
+          child: const Text('Delete',
+              style: TextStyle(color: Colors.red)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _saving ? null : _save,
+          child: _saving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Save'),
+        ),
+      ],
     );
   }
 }
