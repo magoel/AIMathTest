@@ -125,9 +125,12 @@ This document outlines the security review conducted on the AIMathTest repositor
 ### Medium Priority
 
 4. **Content Security Policy Refinement**:
-   - Review and tighten CSP once `unsafe-inline` and `unsafe-eval` can be removed
-   - Flutter currently requires these for proper operation
-   - Monitor Flutter updates for CSP improvements
+   - Current CSP includes `unsafe-inline` and `unsafe-eval` in `script-src` which are required for Flutter web
+   - These directives weaken XSS protection but are necessary for Flutter's current architecture
+   - **Mitigation**: All other CSP directives are strict, and input validation prevents XSS at the source
+   - **Future**: Monitor Flutter team's progress on CSP compatibility (tracked in Flutter issue #33009)
+   - Consider implementing nonces for inline scripts once Flutter supports them
+   - Document migration plan to remove unsafe directives when Flutter allows
 
 5. **Implement Test Expiry Validation**:
    - Add Firestore rule to prevent access to expired tests
