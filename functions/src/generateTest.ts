@@ -37,7 +37,13 @@ function generateShareCode(): string {
 }
 
 export const generateTest = onCall(
-  { secrets: [geminiApiKey] },
+  { 
+    secrets: [geminiApiKey],
+    maxInstances: 10,
+    memory: "512MiB",
+    timeoutSeconds: 60,
+    enforceAppCheck: false, // Set to true when App Check is configured
+  },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -46,8 +52,43 @@ export const generateTest = onCall(
     const { profileId, grade, topics, difficulty, questionCount, timed } =
       request.data as GenerateTestRequest;
 
-    if (!topics || topics.length === 0) {
+    // Input validation
+    if (!profileId || typeof profileId !== "string" || profileId.length === 0) {
+      throw new HttpsError("invalid-argument", "Valid profileId required");
+    }
+
+    if (!topics || !Array.isArray(topics) || topics.length === 0) {
       throw new HttpsError("invalid-argument", "At least one topic required");
+    }
+
+    if (topics.length > 10) {
+      throw new HttpsError("invalid-argument", "Maximum 10 topics allowed");
+    }
+
+    // Validate topics are strings and not too long
+    const validTopics = ["addition", "subtraction", "multiplication", "division", 
+                        "fractions", "decimals", "percentages", "geometry", 
+                        "algebra", "word_problems"];
+    for (const topic of topics) {
+      if (typeof topic !== "string" || !validTopics.includes(topic)) {
+        throw new HttpsError("invalid-argument", `Invalid topic: ${topic}`);
+      }
+    }
+
+    if (typeof grade !== "number" || grade < 0 || grade > 12) {
+      throw new HttpsError("invalid-argument", "Grade must be between 0-12");
+    }
+
+    if (typeof difficulty !== "number" || difficulty < 1 || difficulty > 10) {
+      throw new HttpsError("invalid-argument", "Difficulty must be between 1-10");
+    }
+
+    if (typeof questionCount !== "number" || questionCount < 1 || questionCount > 50) {
+      throw new HttpsError("invalid-argument", "Question count must be between 1-50");
+    }
+
+    if (typeof timed !== "boolean") {
+      throw new HttpsError("invalid-argument", "Timed must be a boolean");
     }
 
     const parentId = request.auth.uid;
