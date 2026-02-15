@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_config.dart';
 import '../../config/constants.dart';
 import '../../providers/auth_provider.dart';
@@ -100,6 +101,20 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
                 'Free to use • No credit card required',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => launchUrl(
+                  Uri.parse('https://aimathtest-kids-3ca24.web.app/privacy.html'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Text(
+                  'Privacy Policy',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
               const Spacer(),

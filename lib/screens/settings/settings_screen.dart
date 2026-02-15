@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/app_config.dart';
 import '../../models/profile_model.dart';
 import '../../providers/auth_provider.dart';
@@ -109,6 +110,29 @@ class SettingsScreen extends ConsumerWidget {
               leading: const Icon(Icons.diamond_outlined),
               title: const Text('Free Plan'),
               subtitle: const Text('5 tests per day'),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Legal section
+          Text(
+            'LEGAL',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Colors.grey,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('Privacy Policy'),
+              trailing: const Icon(Icons.open_in_new, size: 18),
+              onTap: () => launchUrl(
+                Uri.parse('https://aimathtest-kids-3ca24.web.app/privacy.html'),
+                mode: LaunchMode.externalApplication,
+              ),
             ),
           ),
 
