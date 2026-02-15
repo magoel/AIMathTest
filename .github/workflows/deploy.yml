@@ -23,7 +23,7 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Build web
-        run: flutter build web --profile --source-maps --dart-define=Dart.vm.product=true
+        run: flutter build web --profile --source-maps
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
