@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_config.dart';
+import '../../models/profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/user_provider.dart';
@@ -166,7 +167,7 @@ class SettingsScreen extends ConsumerWidget {
 
 class _EditProfileDialog extends StatefulWidget {
   final WidgetRef ref;
-  final dynamic profile;
+  final ProfileModel profile;
 
   const _EditProfileDialog({required this.ref, required this.profile});
 
@@ -241,36 +242,39 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Edit Profile'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Choose Avatar'),
-            const SizedBox(height: 8),
-            AvatarPicker(
-              selected: _avatar,
-              onChanged: (v) => setState(() => _avatar = v),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: "Child's Name"),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<int>(
-              initialValue: _grade,
-              decoration: const InputDecoration(labelText: 'Grade Level'),
-              items: List.generate(13, (i) {
-                return DropdownMenuItem(
-                  value: i,
-                  child: Text(AppConstants.gradeLabels[i]),
-                );
-              }),
-              onChanged: (v) => setState(() => _grade = v ?? _grade),
-            ),
-          ],
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Choose Avatar'),
+              const SizedBox(height: 8),
+              AvatarPicker(
+                selected: _avatar,
+                onChanged: (v) => setState(() => _avatar = v),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: "Child's Name"),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                initialValue: _grade,
+                decoration: const InputDecoration(labelText: 'Grade Level'),
+                items: List.generate(13, (i) {
+                  return DropdownMenuItem(
+                    value: i,
+                    child: Text(AppConstants.gradeLabels[i]),
+                  );
+                }),
+                onChanged: (v) => setState(() => _grade = v ?? _grade),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
