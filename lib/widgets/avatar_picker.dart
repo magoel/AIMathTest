@@ -26,7 +26,7 @@ class AvatarPicker extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               color: isSelected
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                   : Colors.grey.shade100,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(

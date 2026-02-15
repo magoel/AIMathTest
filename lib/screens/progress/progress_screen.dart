@@ -140,7 +140,7 @@ class ProgressScreen extends ConsumerWidget {
                   if (weakestTopic != null) ...[
                     const SizedBox(height: 16),
                     Card(
-                      color: AppTheme.warning.withValues(alpha: 0.1),
+                      color: AppTheme.warning.withOpacity(0.1),
                       child: ListTile(
                         leading: const Text('💡', style: TextStyle(fontSize: 24)),
                         title: Text(

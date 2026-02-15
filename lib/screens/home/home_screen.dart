@@ -132,7 +132,7 @@ class HomeScreen extends ConsumerWidget {
           // Streak
           if (profile?.stats.currentStreak != null && profile!.stats.currentStreak > 0)
             Card(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
