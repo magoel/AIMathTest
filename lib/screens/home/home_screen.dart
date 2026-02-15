@@ -6,43 +6,26 @@ import '../../providers/test_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../config/constants.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _onboardingChecked = false;
-
-  Future<void> _checkOnboarding() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (!mounted) return;
-    final currentProfiles = ref.read(profilesProvider).valueOrNull ?? [];
-    if (currentProfiles.isEmpty) {
-      _onboardingChecked = true;
-      if (mounted) context.go('/onboarding');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeProfileProvider);
     final attemptsAsync = ref.watch(attemptsProvider);
     final profilesAsync = ref.watch(profilesProvider);
 
-    // Show loading while profiles stream is connecting
+    // Show loading until auth + Firestore profiles have both resolved
     if (profilesAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Only check onboarding once per session, and only after a real load
+    // Profiles loaded and truly empty → onboarding
     final profiles = profilesAsync.valueOrNull ?? [];
-    if (profiles.isEmpty && !_onboardingChecked) {
-      // Wait a moment for the Firestore stream to deliver real data
-      // before deciding to redirect to onboarding
-      _checkOnboarding();
+    if (profiles.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) context.go('/onboarding');
+      });
       return const Center(child: CircularProgressIndicator());
     }
 

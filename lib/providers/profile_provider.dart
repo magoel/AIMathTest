@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/profile_model.dart';
 import 'auth_provider.dart';
@@ -5,6 +6,11 @@ import 'user_provider.dart';
 
 final profilesProvider = StreamProvider<List<ProfileModel>>((ref) {
   final authState = ref.watch(authStateProvider);
+
+  // Auth still loading — return a stream that never emits,
+  // keeping profilesProvider in the "loading" state.
+  if (authState.isLoading) return const Stream.empty();
+
   final user = authState.valueOrNull;
   if (user == null) return Stream.value([]);
 
