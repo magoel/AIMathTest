@@ -2,22 +2,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper functions for validation
+    function isValidString(value, maxLength) {
+      return value is string && value.size() > 0 && value.size() <= maxLength;
+    }
+
+    function isValidNumber(value, min, max) {
+      return value is number && value >= min && value <= max;
+    }
+
     // Users — only the owner can read/write their own document
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['email', 'displayName', 'createdAt'])
+        && isValidString(request.resource.data.email, 100)
+        && isValidString(request.resource.data.displayName, 100);
 
       // Child profiles — only the parent can manage
       match /profiles/{profileId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId
+          && request.resource.data.keys().hasAll(['name', 'grade', 'avatar', 'parentId', 'createdAt'])
+          && isValidString(request.resource.data.name, 50)
+          && isValidNumber(request.resource.data.grade, 0, 12)
+          && isValidString(request.resource.data.avatar, 50)
+          && request.resource.data.parentId == userId;
+        allow update: if request.auth != null && request.auth.uid == userId
+          && resource.data.parentId == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId;
       }
     }
 
     // Tests — any authenticated user can read (for sharing),
-    // only authenticated users can create,
+    // only authenticated users can create with validation,
     // only the creator can update/delete
     match /tests/{testId} {
       allow read: if request.auth != null;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasAll(['shareCode', 'createdBy', 'config', 'questions', 'createdAt', 'expiresAt'])
+        && isValidString(request.resource.data.shareCode, 20)
+        && request.resource.data.createdBy.parentId == request.auth.uid
+        && request.resource.data.config.questionCount >= 1
+        && request.resource.data.config.questionCount <= 50
+        && request.resource.data.questions.size() == request.resource.data.config.questionCount
+        && request.resource.data.questions.size() <= 50;
       allow update, delete: if request.auth != null
         && resource.data.createdBy.parentId == request.auth.uid;
     }
@@ -26,7 +55,12 @@ service cloud.firestore {
     // The query must filter by parentId matching the authenticated user
     match /attempts/{attemptId} {
       allow create: if request.auth != null
-        && request.resource.data.parentId == request.auth.uid;
+        && request.resource.data.parentId == request.auth.uid
+        && request.resource.data.keys().hasAll(['parentId', 'profileId', 'testId', 'completedAt'])
+        && isValidString(request.resource.data.profileId, 100)
+        && isValidString(request.resource.data.testId, 100)
+        && isValidNumber(request.resource.data.score, 0, 10000)
+        && isValidNumber(request.resource.data.percentage, 0, 100);
       allow read, update, delete: if request.auth != null
         && resource.data.parentId == request.auth.uid;
     }
