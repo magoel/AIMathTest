@@ -75,9 +75,9 @@ class AIService {
       'timed': timed,
     });
 
-    final data = result.data as Map<String, dynamic>;
+    final data = Map<String, dynamic>.from(result.data as Map);
     final questions = (data['questions'] as List<dynamic>)
-        .map((q) => QuestionModel.fromMap(q as Map<String, dynamic>))
+        .map((q) => QuestionModel.fromMap(Map<String, dynamic>.from(q as Map)))
         .toList();
 
     final testId = data['testId'] as String;
