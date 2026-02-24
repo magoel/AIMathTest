@@ -55,5 +55,11 @@ functions/node_modules/
 .env
 *.env
 
+# Android signing
+android/key.properties
+android/app/upload-keystore.jks
+*.jks
+*.keystore
+
 # Claude plans
 .claude/plans/
