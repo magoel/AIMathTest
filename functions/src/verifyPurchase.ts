@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -27,23 +27,29 @@ export const verifyPurchase = onCall(async (request) => {
   }
 
   try {
-    // Use Application Default Credentials (Firebase service account)
-    const auth = new google.auth.GoogleAuth({
+    // Use Application Default Credentials via google-auth-library
+    const auth = new GoogleAuth({
       scopes: ["https://www.googleapis.com/auth/androidpublisher"],
     });
+    const client = await auth.getClient();
+    const accessToken = await client.getAccessToken();
 
-    const androidPublisher = google.androidpublisher({
-      version: "v3",
-      auth: auth,
+    // Call Google Play Developer API v2 directly via REST
+    const packageName = "com.aimathtest.aimathtest";
+    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken.token}`,
+      },
     });
 
-    // Verify the subscription with Google Play using v2 API
-    const response = await androidPublisher.purchases.subscriptionsv2.get({
-      packageName: "com.aimathtest.aimathtest",
-      token: purchaseToken,
-    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Google Play API error (${response.status}): ${errorText}`);
+    }
 
-    const purchase = response.data;
+    const purchase = await response.json();
 
     // Determine subscription status from lineItems
     let status = "expired";
@@ -57,13 +63,11 @@ export const verifyPurchase = onCall(async (request) => {
 
       const now = Date.now();
       if (expiryTimeMillis > now) {
-        // Subscription is still within its period
         if (purchase.subscriptionState === "SUBSCRIPTION_STATE_ACTIVE") {
           status = "active";
         } else if (purchase.subscriptionState === "SUBSCRIPTION_STATE_IN_GRACE_PERIOD") {
           status = "grace_period";
         } else if (purchase.subscriptionState === "SUBSCRIPTION_STATE_CANCELED") {
-          // Cancelled but still within paid period
           status = "cancelled";
         } else {
           status = "active";
