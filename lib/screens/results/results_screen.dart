@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,11 +22,26 @@ class ResultsScreen extends ConsumerStatefulWidget {
 class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   TestModel? _test;
   bool _loading = true;
+  late ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void _maybePlayConfetti(double percentage) {
+    if (percentage >= 80) {
+      _confettiController.play();
+    }
   }
 
   Future<void> _loadData() async {
@@ -74,6 +91,13 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     final attempts = attemptsAsync.valueOrNull ?? [];
     final attempt = attempts.where((a) => a.testId == widget.testId).firstOrNull;
 
+    // Trigger confetti on first load
+    if (attempt != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _maybePlayConfetti(attempt.percentage);
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Results'),
@@ -82,11 +106,13 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
           onPressed: () => context.go('/home'),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            if (attempt != null) ...[
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                if (attempt != null) ...[
               ScoreDisplay(
                 score: attempt.score,
                 total: attempt.totalQuestions,
@@ -180,6 +206,28 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
             ),
           ],
         ),
+      ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirection: pi / 2, // downward
+              emissionFrequency: 0.05,
+              numberOfParticles: 20,
+              maxBlastForce: 20,
+              minBlastForce: 5,
+              gravity: 0.2,
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.orange,
+                Colors.purple,
+                Colors.pink,
+                Colors.yellow,
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
