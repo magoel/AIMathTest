@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../models/attempt_model.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
 import '../../config/constants.dart';
@@ -54,6 +57,16 @@ class ProgressScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 24),
+
+          // Score trend chart
+          attemptsAsync.when(
+            data: (attempts) {
+              if (attempts.length < 2) return const SizedBox.shrink();
+              return _ScoreTrendChart(attempts: attempts);
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
 
           // Performance by topic
           Text(
@@ -257,6 +270,130 @@ class _StatCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ScoreTrendChart extends StatelessWidget {
+  final List<AttemptModel> attempts;
+
+  const _ScoreTrendChart({required this.attempts});
+
+  @override
+  Widget build(BuildContext context) {
+    // Take last 15 attempts in chronological order
+    final recent = attempts.length > 15
+        ? attempts.sublist(0, 15).reversed.toList()
+        : attempts.reversed.toList();
+
+    final spots = <FlSpot>[];
+    for (int i = 0; i < recent.length; i++) {
+      spots.add(FlSpot(i.toDouble(), recent[i].percentage));
+    }
+
+    final maxX = math.max(1.0, (recent.length - 1).toDouble());
+
+    // Determine trend color
+    final first = recent.first.percentage;
+    final last = recent.last.percentage;
+    final trendColor = last >= first ? AppTheme.success : AppTheme.primary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Score Trend',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+            child: SizedBox(
+              height: 180,
+              child: LineChart(
+                LineChartData(
+                  minY: 0,
+                  maxY: 100,
+                  minX: 0,
+                  maxX: maxX,
+                  gridData: FlGridData(
+                    show: true,
+                    horizontalInterval: 25,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: Colors.grey.shade200,
+                      strokeWidth: 1,
+                    ),
+                    drawVerticalLine: false,
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 35,
+                        interval: 25,
+                        getTitlesWidget: (value, _) => Text(
+                          '${value.toInt()}%',
+                          style: const TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      preventCurveOverShooting: true,
+                      color: trendColor,
+                      barWidth: 3,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, __, ___) =>
+                            FlDotCirclePainter(
+                          radius: 3,
+                          color: trendColor,
+                          strokeWidth: 0,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: trendColor.withOpacity(0.1),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (spots) => spots.map((spot) {
+                        return LineTooltipItem(
+                          '${spot.y.round()}%',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }
