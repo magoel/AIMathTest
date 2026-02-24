@@ -30,6 +30,8 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
   TestModel? _test;
   int _currentIndex = 0;
   late List<String> _answers;
+  late List<int> _shuffleOrder;
+  String? _retakeAttemptId;
   late Stopwatch _stopwatch;
   Timer? _timer;
   int _elapsedSeconds = 0;
@@ -56,6 +58,15 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
     if (currentTest != null && currentTest.id == widget.testId) {
       _test = currentTest;
       _answers = List.filled(_test!.questions.length, '');
+
+      // Check if this is a re-take — shuffle question order
+      _retakeAttemptId = ref.read(retakeAttemptIdProvider);
+      _shuffleOrder = List.generate(_test!.questions.length, (i) => i);
+      if (_retakeAttemptId != null) {
+        _shuffleOrder.shuffle();
+        // Clear the provider so refreshing doesn't re-trigger shuffle
+        ref.read(retakeAttemptIdProvider.notifier).state = null;
+      }
     }
   }
 
@@ -108,7 +119,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
       final answers = <AnswerModel>[];
       int score = 0;
       for (int i = 0; i < _test!.questions.length; i++) {
-        final q = _test!.questions[i];
+        final q = _test!.questions[_shuffleOrder[i]];
         final userAnswer = _answers[i].trim();
         final isCorrect = userAnswer.toLowerCase() == q.correctAnswer.toLowerCase();
         if (isCorrect) score++;
@@ -118,6 +129,8 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
           isCorrect: isCorrect,
         ));
       }
+
+      final isRetake = _retakeAttemptId != null;
 
       final attempt = AttemptModel(
         id: const Uuid().v4(),
@@ -129,7 +142,9 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
         totalQuestions: _test!.questions.length,
         percentage: (score / _test!.questions.length) * 100,
         timeTaken: _elapsedSeconds,
-        shuffleOrder: List.generate(_test!.questions.length, (i) => i),
+        shuffleOrder: _shuffleOrder,
+        isRetake: isRetake,
+        previousAttemptId: _retakeAttemptId,
         completedAt: DateTime.now(),
         testTopics: _test!.config.topics,
       );
@@ -212,7 +227,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
       }
     }
 
-    final question = _test!.questions[_currentIndex];
+    final question = _test!.questions[_shuffleOrder[_currentIndex]];
     final totalQuestions = _test!.questions.length;
 
     return PopScope(

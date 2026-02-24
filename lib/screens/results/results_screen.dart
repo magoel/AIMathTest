@@ -165,6 +165,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     isOutlined: true,
                     onPressed: () {
                       ref.read(currentTestProvider.notifier).state = _test;
+                      ref.read(retakeAttemptIdProvider.notifier).state = attempt?.id;
                       context.push('/test/${_test!.id}');
                     },
                   ),

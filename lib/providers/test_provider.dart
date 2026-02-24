@@ -10,6 +10,9 @@ final aiServiceProvider = Provider<AIService>((ref) => AIService());
 
 final currentTestProvider = StateProvider<TestModel?>((ref) => null);
 
+/// Set to the previous attempt ID when re-taking a test; null otherwise.
+final retakeAttemptIdProvider = StateProvider<String?>((ref) => null);
+
 final testGenerationProvider = FutureProvider.family<TestModel, TestConfig>(
   (ref, config) async {
     final authState = ref.read(authStateProvider);
