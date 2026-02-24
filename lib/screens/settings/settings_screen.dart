@@ -10,6 +10,8 @@ import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../config/constants.dart';
 import '../../widgets/avatar_picker.dart';
+import '../../widgets/upgrade_dialog.dart';
+import '../../providers/subscription_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -334,19 +336,75 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
 class _SubscriptionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isPremium = ref.watch(isPremiumProvider);
+    final userAsync = ref.watch(userProvider);
     final attemptsAsync = ref.watch(attemptsProvider);
+    final billingAvailable = ref.watch(billingAvailableProvider);
+    final canUpgrade = billingAvailable.valueOrNull ?? false;
+
+    if (isPremium) {
+      final user = userAsync.valueOrNull;
+      final isAnnual = user?.subscriptionPlan == 'premium_annual';
+      return Card(
+        color: Colors.amber.withOpacity(0.1),
+        child: ListTile(
+          leading: const Icon(Icons.diamond, color: Colors.amber),
+          title: const Text('Premium Plan'),
+          subtitle: Text(
+            isAnnual
+                ? 'Annual subscription \u2014 Unlimited tests!'
+                : 'Monthly subscription \u2014 Unlimited tests!',
+          ),
+          trailing: TextButton(
+            onPressed: () => launchUrl(
+              Uri.parse(
+                  'https://play.google.com/store/account/subscriptions'),
+              mode: LaunchMode.externalApplication,
+            ),
+            child: const Text('Manage'),
+          ),
+        ),
+      );
+    }
+
     final todayUsed = attemptsAsync.whenOrNull(data: (attempts) {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
       return attempts.where((a) => a.completedAt.isAfter(startOfDay)).length;
     }) ?? 0;
-    final remaining = (5 - todayUsed).clamp(0, 5);
+    final remaining = (AppConstants.freeTestDailyLimit - todayUsed)
+        .clamp(0, AppConstants.freeTestDailyLimit);
 
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.diamond_outlined),
-        title: const Text('Free Plan'),
-        subtitle: Text('$remaining of 5 tests remaining today'),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.diamond_outlined),
+            title: const Text('Free Plan'),
+            subtitle: Text(
+                '$remaining of ${AppConstants.freeTestDailyLimit} tests remaining today'),
+          ),
+          if (canUpgrade)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => const UpgradeDialog(),
+                  ),
+                  icon: const Icon(Icons.star),
+                  label: const Text('Upgrade to Premium'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

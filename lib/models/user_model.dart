@@ -10,6 +10,7 @@ class UserModel {
   final bool onboardingCompleted;
   final String? lastActiveProfileId;
   final String subscriptionPlan;
+  final String subscriptionStatus;
 
   const UserModel({
     required this.id,
@@ -21,7 +22,12 @@ class UserModel {
     this.onboardingCompleted = false,
     this.lastActiveProfileId,
     this.subscriptionPlan = 'free',
+    this.subscriptionStatus = 'none',
   });
+
+  bool get isPremium =>
+      subscriptionPlan != 'free' &&
+      (subscriptionStatus == 'active' || subscriptionStatus == 'grace_period');
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -35,6 +41,7 @@ class UserModel {
       onboardingCompleted: data['onboardingCompleted'] ?? false,
       lastActiveProfileId: data['lastActiveProfileId'],
       subscriptionPlan: data['subscription']?['plan'] ?? 'free',
+      subscriptionStatus: data['subscription']?['status'] ?? 'none',
     );
   }
 
@@ -56,6 +63,7 @@ class UserModel {
     bool? onboardingCompleted,
     String? lastActiveProfileId,
     String? subscriptionPlan,
+    String? subscriptionStatus,
   }) {
     return UserModel(
       id: id,
@@ -67,6 +75,7 @@ class UserModel {
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       lastActiveProfileId: lastActiveProfileId ?? this.lastActiveProfileId,
       subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
     );
   }
 }

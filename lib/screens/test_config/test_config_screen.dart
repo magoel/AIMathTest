@@ -8,6 +8,7 @@ import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../config/constants.dart';
 import '../../widgets/topic_chip.dart';
+import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_button.dart';
 
 class TestConfigScreen extends ConsumerStatefulWidget {
@@ -24,8 +25,6 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
   bool _timed = false;
   bool _generating = false;
 
-  static const int _dailyTestLimit = 5;
-
   Future<void> _startTest() async {
     if (_selectedTopics.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,29 +40,40 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
       final profile = ref.read(activeProfileProvider);
       if (user == null || profile == null) throw Exception('Not authenticated');
 
-      // Check daily test limit
-      final db = ref.read(databaseServiceProvider);
-      final todayCount = await db.getTodayAttemptCount(user.uid, profile.id);
-      if (todayCount >= _dailyTestLimit) {
-        if (mounted) {
-          await showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Daily Limit Reached'),
-              content: const Text(
-                'You\'ve used all 5 free tests for today. Come back tomorrow for more practice!',
-              ),
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('OK'),
+      // Check daily test limit (skip for premium users)
+      final isPremium = ref.read(isPremiumProvider);
+      if (!isPremium) {
+        final db = ref.read(databaseServiceProvider);
+        final todayCount = await db.getTodayAttemptCount(user.uid, profile.id);
+        if (todayCount >= AppConstants.freeTestDailyLimit) {
+          if (mounted) {
+            await showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Daily Limit Reached'),
+                content: const Text(
+                  'You\'ve used all 5 free tests for today.\n\n'
+                  'Upgrade to Premium for unlimited tests!',
                 ),
-              ],
-            ),
-          );
-          setState(() => _generating = false);
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Not Now'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      context.push('/settings');
+                    },
+                    child: const Text('Upgrade'),
+                  ),
+                ],
+              ),
+            );
+            setState(() => _generating = false);
+          }
+          return;
         }
-        return;
       }
 
       final ai = ref.read(aiServiceProvider);

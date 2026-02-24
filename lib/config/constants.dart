@@ -45,6 +45,15 @@ class AppConstants {
   static const int testExpiryDays = 90;
   static const int maxRecentTests = 5;
   static const int recentAttemptsForAI = 20;
+
+  // Subscription
+  static const int freeTestDailyLimit = 5;
+  static const String monthlyProductId = 'premium_monthly';
+  static const String annualProductId = 'premium_annual';
+  static const Set<String> subscriptionProductIds = {
+    monthlyProductId,
+    annualProductId,
+  };
 }
 
 class TopicInfo {
