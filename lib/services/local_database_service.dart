@@ -181,6 +181,17 @@ class LocalDatabaseService {
       ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
   }
 
+  Future<int> getTodayAttemptCount(String parentId, String profileId) async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    return _attempts
+        .where((a) =>
+            a.parentId == parentId &&
+            a.profileId == profileId &&
+            a.completedAt.isAfter(startOfDay))
+        .length;
+  }
+
   void dispose() {
     for (final c in _profileStreamControllers.values) {
       c.close();

@@ -141,5 +141,9 @@ class FirebaseDatabaseWrapper extends LocalDatabaseService {
   Future<List<AttemptModel>> getAttemptsForTest(
           String testId, String profileId) =>
       _fb.getAttemptsForTest(testId, profileId);
+
+  @override
+  Future<int> getTodayAttemptCount(String parentId, String profileId) =>
+      _fb.getTodayAttemptCount(parentId, profileId);
 }
 

@@ -6,6 +6,7 @@ import '../../config/app_config.dart';
 import '../../models/profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
+import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../config/constants.dart';
 import '../../widgets/avatar_picker.dart';
@@ -105,13 +106,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.diamond_outlined),
-              title: const Text('Free Plan'),
-              subtitle: const Text('5 tests per day'),
-            ),
-          ),
+          _SubscriptionCard(),
 
           const SizedBox(height: 24),
 
@@ -332,6 +327,27 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
               : const Text('Save'),
         ),
       ],
+    );
+  }
+}
+
+class _SubscriptionCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final attemptsAsync = ref.watch(attemptsProvider);
+    final todayUsed = attemptsAsync.whenOrNull(data: (attempts) {
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      return attempts.where((a) => a.completedAt.isAfter(startOfDay)).length;
+    }) ?? 0;
+    final remaining = (5 - todayUsed).clamp(0, 5);
+
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.diamond_outlined),
+        title: const Text('Free Plan'),
+        subtitle: Text('$remaining of 5 tests remaining today'),
+      ),
     );
   }
 }

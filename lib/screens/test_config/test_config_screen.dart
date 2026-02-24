@@ -24,6 +24,8 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
   bool _timed = false;
   bool _generating = false;
 
+  static const int _dailyTestLimit = 5;
+
   Future<void> _startTest() async {
     if (_selectedTopics.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,6 +40,31 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
       final user = ref.read(authStateProvider).valueOrNull;
       final profile = ref.read(activeProfileProvider);
       if (user == null || profile == null) throw Exception('Not authenticated');
+
+      // Check daily test limit
+      final db = ref.read(databaseServiceProvider);
+      final todayCount = await db.getTodayAttemptCount(user.uid, profile.id);
+      if (todayCount >= _dailyTestLimit) {
+        if (mounted) {
+          await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Daily Limit Reached'),
+              content: const Text(
+                'You\'ve used all 5 free tests for today. Come back tomorrow for more practice!',
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+          setState(() => _generating = false);
+        }
+        return;
+      }
 
       final ai = ref.read(aiServiceProvider);
 

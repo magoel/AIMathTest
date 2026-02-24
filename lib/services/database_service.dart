@@ -151,4 +151,16 @@ class DatabaseService {
         .map((doc) => AttemptModel.fromFirestore(doc))
         .toList();
   }
+
+  Future<int> getTodayAttemptCount(String parentId, String profileId) async {
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final snapshot = await _db
+        .collection('attempts')
+        .where('parentId', isEqualTo: parentId)
+        .where('profileId', isEqualTo: profileId)
+        .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .get();
+    return snapshot.docs.length;
+  }
 }
