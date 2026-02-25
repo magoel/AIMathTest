@@ -9,6 +9,7 @@ import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../config/constants.dart';
+import '../../config/board_curriculum.dart';
 import '../../widgets/avatar_picker.dart';
 import '../../widgets/upgrade_dialog.dart';
 import '../../providers/subscription_provider.dart';
@@ -51,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
                   ...profiles.map((profile) => ListTile(
                     leading: Text(profile.avatar, style: const TextStyle(fontSize: 28)),
                     title: Text(profile.name),
-                    subtitle: Text(AppConstants.gradeLabels[profile.grade]),
+                    subtitle: Text('${AppConstants.gradeLabels[profile.grade]} \u2022 ${profile.boardLabel}'),
                     trailing: IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () => _showEditProfileDialog(context, ref, profile),
@@ -200,6 +201,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   late TextEditingController _nameController;
   late String _avatar;
   late int _grade;
+  late String _board;
   bool _saving = false;
 
   @override
@@ -208,6 +210,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     _nameController = TextEditingController(text: widget.profile.name);
     _avatar = widget.profile.avatar;
     _grade = widget.profile.grade;
+    _board = widget.profile.board;
   }
 
   @override
@@ -225,6 +228,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
         name: _nameController.text.trim(),
         avatar: _avatar,
         grade: _grade,
+        board: _board,
       ));
       if (mounted) Navigator.of(context).pop();
     } finally {
@@ -303,6 +307,18 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
                   );
                 }),
                 onChanged: (v) => setState(() => _grade = v ?? _grade),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _board,
+                decoration: const InputDecoration(labelText: 'Curriculum Board'),
+                items: Board.values.map((board) {
+                  return DropdownMenuItem(
+                    value: board.name,
+                    child: Text(board.label),
+                  );
+                }).toList(),
+                onChanged: (v) => setState(() => _board = v ?? _board),
               ),
             ],
           ),

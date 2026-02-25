@@ -4,19 +4,25 @@ import '../config/constants.dart';
 class TopicChipGrid extends StatelessWidget {
   final Set<String> selected;
   final ValueChanged<Set<String>> onChanged;
+  final Set<String>? availableTopics;
 
   const TopicChipGrid({
     super.key,
     required this.selected,
     required this.onChanged,
+    this.availableTopics,
   });
 
   @override
   Widget build(BuildContext context) {
+    final entries = availableTopics != null
+        ? AppConstants.topics.entries.where((e) => availableTopics!.contains(e.key))
+        : AppConstants.topics.entries;
+
     return Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: AppConstants.topics.entries.map((entry) {
+      children: entries.map((entry) {
         final isSelected = selected.contains(entry.key);
         return GestureDetector(
           onTap: () {

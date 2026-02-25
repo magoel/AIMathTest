@@ -7,6 +7,7 @@ import '../../providers/profile_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/profile_avatar.dart';
 import '../../config/constants.dart';
+import '../../config/board_curriculum.dart';
 import '../../widgets/avatar_picker.dart';
 
 class ProfileSelectorScreen extends ConsumerWidget {
@@ -150,6 +151,7 @@ class _AddProfileDialogState extends State<_AddProfileDialog> {
   final _nameController = TextEditingController();
   String _avatar = AppConstants.avatars.first;
   int _grade = 3;
+  String _board = 'cbse';
   bool _saving = false;
 
   @override
@@ -173,6 +175,7 @@ class _AddProfileDialogState extends State<_AddProfileDialog> {
         name: _nameController.text.trim(),
         avatar: _avatar,
         grade: _grade,
+        board: _board,
         createdAt: DateTime.now(),
       ));
 
@@ -214,6 +217,18 @@ class _AddProfileDialogState extends State<_AddProfileDialog> {
                 );
               }),
               onChanged: (v) => setState(() => _grade = v ?? 3),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: _board,
+              decoration: const InputDecoration(labelText: 'Curriculum Board'),
+              items: Board.values.map((board) {
+                return DropdownMenuItem(
+                  value: board.name,
+                  child: Text(board.label),
+                );
+              }).toList(),
+              onChanged: (v) => setState(() => _board = v ?? 'cbse'),
             ),
           ],
         ),

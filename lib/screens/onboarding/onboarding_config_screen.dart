@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_config.dart';
 import '../../config/constants.dart';
+import '../../config/board_curriculum.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
@@ -50,6 +51,7 @@ class _OnboardingConfigScreenState
         profileId: profile.id,
         profileName: profile.name,
         grade: profile.grade,
+        board: profile.board,
         topics: _selectedTopics.toList(),
         difficulty: _difficulty,
         questionCount: _questionCount,
@@ -77,6 +79,12 @@ class _OnboardingConfigScreenState
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(activeProfileProvider);
+    final availableTopics = profile != null
+        ? getAvailableTopics(profile.boardEnum, profile.grade)
+        : null;
+    if (availableTopics != null) {
+      _selectedTopics = _selectedTopics.intersection(availableTopics);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -105,6 +113,7 @@ class _OnboardingConfigScreenState
             TopicChipGrid(
               selected: _selectedTopics,
               onChanged: (s) => setState(() => _selectedTopics = s),
+              availableTopics: availableTopics,
             ),
             const SizedBox(height: 24),
 

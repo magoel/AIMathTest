@@ -13,6 +13,7 @@ const geminiApiKey = defineSecret("GEMINI_API_KEY");
 interface GenerateTestRequest {
   profileId: string;
   grade: number;
+  board?: string;
   topics: string[];
   difficulty: number;
   questionCount: number;
@@ -43,7 +44,7 @@ export const generateTest = onCall(
       throw new HttpsError("unauthenticated", "Must be logged in");
     }
 
-    const { profileId, grade, topics, difficulty, questionCount, timed } =
+    const { profileId, grade, board, topics, difficulty, questionCount, timed } =
       request.data as GenerateTestRequest;
 
     if (!topics || topics.length === 0) {
@@ -84,11 +85,15 @@ export const generateTest = onCall(
 
     // Build AI prompt
     const gradeLabel = grade === 0 ? "Kindergarten" : `Grade ${grade}`;
-    const prompt = `You are a math test generator for a ${gradeLabel} student.
+    const boardLabel = board === "ib" ? "IB (International Baccalaureate)"
+      : board === "cambridge" ? "Cambridge International"
+      : "CBSE";
+    const prompt = `You are a math test generator for a ${gradeLabel} student following the ${boardLabel} curriculum.
 
 Generate exactly ${questionCount} math problems with these requirements:
 - Topics: ${topics.join(", ")}
 - Difficulty level: ${difficulty}/10
+- Curriculum: ${boardLabel} — use notation, terminology, and problem styles typical of this board
 - Format: Fill-in-the-blank with numeric answers only
 ${weakTopics.length > 0 ? `\nStudent's weak areas: ${weakTopics.join(", ")}` : ""}
 ${strongTopics.length > 0 ? `\nStudent's strong areas: ${strongTopics.join(", ")}` : ""}

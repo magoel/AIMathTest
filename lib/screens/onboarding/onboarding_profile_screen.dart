@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/constants.dart';
+import '../../config/board_curriculum.dart';
 import '../../models/profile_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
@@ -22,6 +23,7 @@ class _OnboardingProfileScreenState
   final _nameController = TextEditingController();
   String _avatar = AppConstants.avatars.first;
   int _grade = 3;
+  String _board = 'cbse';
   bool _saving = false;
 
   @override
@@ -50,6 +52,7 @@ class _OnboardingProfileScreenState
         name: _nameController.text.trim(),
         avatar: _avatar,
         grade: _grade,
+        board: _board,
         createdAt: DateTime.now(),
       ));
 
@@ -123,6 +126,20 @@ class _OnboardingProfileScreenState
                 );
               }),
               onChanged: (v) => setState(() => _grade = v ?? 3),
+            ),
+            const SizedBox(height: 16),
+
+            // Board
+            DropdownButtonFormField<String>(
+              value: _board,
+              decoration: const InputDecoration(labelText: 'Curriculum Board'),
+              items: Board.values.map((board) {
+                return DropdownMenuItem(
+                  value: board.name,
+                  child: Text('${board.label} — ${board.description}'),
+                );
+              }).toList(),
+              onChanged: (v) => setState(() => _board = v ?? 'cbse'),
             ),
             const SizedBox(height: 32),
 

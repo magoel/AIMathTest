@@ -17,6 +17,7 @@ class AIService {
     required String profileId,
     required String profileName,
     required int grade,
+    String board = 'cbse',
     required List<String> topics,
     required int difficulty,
     required int questionCount,
@@ -31,6 +32,7 @@ class AIService {
           profileId: profileId,
           profileName: profileName,
           grade: grade,
+          board: board,
           topics: topics,
           difficulty: difficulty,
           questionCount: questionCount,
@@ -54,12 +56,13 @@ class AIService {
     );
   }
 
-  /// Call the generateTest Cloud Function (which calls Gemini 1.5 Flash).
+  /// Call the generateTest Cloud Function (which calls Gemini 2.0 Flash).
   Future<TestModel> _generateViaCloudFunction({
     required String parentId,
     required String profileId,
     required String profileName,
     required int grade,
+    required String board,
     required List<String> topics,
     required int difficulty,
     required int questionCount,
@@ -69,6 +72,7 @@ class AIService {
     final result = await callable.call({
       'profileId': profileId,
       'grade': grade,
+      'board': board,
       'topics': topics,
       'difficulty': difficulty,
       'questionCount': questionCount,
@@ -209,6 +213,41 @@ class AIService {
         final a = random.nextInt(maxNum) + 1;
         final b = random.nextInt(maxNum) + 1;
         return {'question': 'Sam has $a apples and gets $b more. How many total?', 'answer': '${a + b}'};
+      case 'measurement':
+        final cm = (random.nextInt(maxNum) + 1) * 10;
+        final m = cm ~/ 100;
+        final rem = cm % 100;
+        return {'question': 'Convert $cm cm to meters = ?', 'answer': '$m.${rem.toString().padLeft(2, '0')}'};
+      case 'data_handling':
+        final values = List.generate(5, (_) => random.nextInt(maxNum) + 1);
+        final sum = values.reduce((a, b) => a + b);
+        final mean = sum ~/ values.length;
+        return {'question': 'Mean of ${values.join(", ")} = ?', 'answer': '$mean'};
+      case 'ratio_proportion':
+        final a = random.nextInt(10) + 2;
+        final b = random.nextInt(10) + 2;
+        final multiplier = random.nextInt(5) + 2;
+        final bigA = a * multiplier;
+        return {'question': 'If $a:$b = $bigA:x, then x = ?', 'answer': '${b * multiplier}'};
+      case 'probability':
+        final total = [6, 8, 10, 12][random.nextInt(4)];
+        final favorable = random.nextInt(total - 1) + 1;
+        return {'question': 'A bag has $total balls, $favorable are red. Probability of picking red = ?', 'answer': '$favorable/$total'};
+      case 'trigonometry':
+        final angles = [30, 45, 60];
+        final angle = angles[random.nextInt(3)];
+        final sinValues = {30: '1/2', 45: '1/√2', 60: '√3/2'};
+        return {'question': 'sin($angle°) = ?', 'answer': sinValues[angle]!};
+      case 'number_systems':
+        final a = random.nextInt(20) + 2;
+        final sqr = a * a;
+        return {'question': '√$sqr = ?', 'answer': '$a'};
+      case 'calculus':
+        final coeff = random.nextInt(8) + 2;
+        final power = random.nextInt(4) + 2;
+        final newCoeff = coeff * power;
+        final newPower = power - 1;
+        return {'question': 'd/dx($coeff x^$power) = ?', 'answer': '${newCoeff}x^$newPower'};
       default:
         final a = random.nextInt(maxNum) + 1;
         final b = random.nextInt(maxNum) + 1;

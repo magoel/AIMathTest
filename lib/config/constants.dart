@@ -24,6 +24,13 @@ class AppConstants {
     'geometry': TopicInfo('Geometry', '📐'),
     'algebra': TopicInfo('Algebra', 'x'),
     'word_problems': TopicInfo('Word Problems', '📝'),
+    'measurement': TopicInfo('Measurement', '📏'),
+    'data_handling': TopicInfo('Data Handling', '📊'),
+    'ratio_proportion': TopicInfo('Ratio & Proportion', '⚖️'),
+    'probability': TopicInfo('Probability', '🎲'),
+    'trigonometry': TopicInfo('Trigonometry', 'sin'),
+    'number_systems': TopicInfo('Number Systems', '🔢'),
+    'calculus': TopicInfo('Calculus', '∫'),
   };
 
   static const List<int> questionCounts = [5, 10, 15, 20];

@@ -7,6 +7,7 @@ import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../config/constants.dart';
+import '../../config/board_curriculum.dart';
 import '../../widgets/topic_chip.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_button.dart';
@@ -83,6 +84,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
         profileId: profile.id,
         profileName: profile.name,
         grade: profile.grade,
+        board: profile.board,
         topics: _selectedTopics.toList(),
         difficulty: _difficulty,
         questionCount: _questionCount,
@@ -111,6 +113,14 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = ref.watch(activeProfileProvider);
+    final availableTopics = profile != null
+        ? getAvailableTopics(profile.boardEnum, profile.grade)
+        : null;
+    if (availableTopics != null) {
+      _selectedTopics = _selectedTopics.intersection(availableTopics);
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -135,6 +145,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
           TopicChipGrid(
             selected: _selectedTopics,
             onChanged: (s) => setState(() => _selectedTopics = s),
+            availableTopics: availableTopics,
           ),
           const SizedBox(height: 24),
 
