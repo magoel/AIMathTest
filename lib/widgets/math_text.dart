@@ -17,11 +17,15 @@ class MathText extends StatelessWidget {
     this.alignment = WrapAlignment.center,
   });
 
-  /// Clean up LaTeX string — fix common escaping issues from JSON/Firestore.
+  /// Clean up LaTeX string — fix escaping issues from JSON/Firestore.
   static String _cleanLatex(String tex) {
     var cleaned = tex;
-    // Fix double-escaped backslashes from JSON serialization
-    // e.g., \\frac -> \frac, \\sqrt -> \sqrt
+    // Fix JSON escape sequences that break LaTeX commands:
+    // \f (form feed) in JSON eats the backslash from \frac, \flat, etc.
+    // \b (backspace) in JSON eats the backslash from \binom, \bar, etc.
+    cleaned = cleaned.replaceAll('\x0C', '\\f'); // form feed → \f
+    cleaned = cleaned.replaceAll('\x08', '\\b'); // backspace → \b
+    // Fix double-escaped backslashes
     cleaned = cleaned.replaceAll('\\\\', '\\');
     return cleaned;
   }

@@ -203,14 +203,20 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
 
       const parsed = JSON.parse(jsonStr);
 
+      // Fix JSON escape sequences that break LaTeX commands.
+      // JSON.parse() converts \f to form feed (0x0C) and \b to backspace (0x08),
+      // but these are needed as literal \frac, \binom etc. in LaTeX.
+      const fixLatex = (s: string): string =>
+        s.replace(/\x0C/g, "\\f").replace(/\x08/g, "\\b");
+
       const questions: Question[] = parsed.map(
         (q: { question: string; answer: string; topic: string; choices?: string[] }, i: number) => ({
           id: `q${i + 1}`,
           type: q.choices ? "multiple_choice" : "fill_in_blank",
-          question: q.question,
-          correctAnswer: String(q.answer),
+          question: fixLatex(q.question),
+          correctAnswer: fixLatex(String(q.answer)),
           topic: q.topic,
-          ...(q.choices ? { choices: q.choices } : {}),
+          ...(q.choices ? { choices: q.choices.map(fixLatex) } : {}),
         })
       );
 
