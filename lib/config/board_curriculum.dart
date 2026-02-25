@@ -27,9 +27,12 @@ enum Board {
 }
 
 /// Returns the set of topic keys available for a given board and grade.
+/// Shows topics from past 2 grades + current grade + next 1 grade,
+/// so students can review recent material and preview upcoming topics.
 /// Grade: 0 = Kindergarten, 1-12 = Grade 1-12.
 Set<String> getAvailableTopics(Board board, int grade) {
-  return _curriculumMap[board]![grade.clamp(0, 12)]!;
+  final maxGrade = (grade + 1).clamp(0, 12);
+  return _curriculumMap[board]![maxGrade]!;
 }
 
 // Base topics available from kindergarten for most boards
