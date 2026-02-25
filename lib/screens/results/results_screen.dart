@@ -9,6 +9,7 @@ import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/score_display.dart';
 import '../../widgets/common/app_button.dart';
+import '../../widgets/math_text.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -136,28 +137,66 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                 final isCorrect = answer?.isCorrect ?? false;
 
                 return Card(
-                  child: ListTile(
-                    leading: Icon(
-                      isCorrect ? Icons.check_circle : Icons.cancel,
-                      color: isCorrect ? Colors.green : Colors.red,
-                    ),
-                    title: Text(q.question),
-                    subtitle: Column(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (answer != null && !isCorrect)
-                          Text(
-                            'Your answer: ${answer.userAnswer}',
-                            style: const TextStyle(color: Colors.red),
+                        Icon(
+                          isCorrect ? Icons.check_circle : Icons.cancel,
+                          color: isCorrect ? Colors.green : Colors.red,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              MathText(
+                                q.question,
+                                style: Theme.of(context).textTheme.bodyLarge,
+                                textAlign: TextAlign.left,
+                              ),
+                              if (answer != null && !isCorrect) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Text('Your answer: ',
+                                        style: TextStyle(color: Colors.red)),
+                                    Expanded(
+                                      child: MathText(
+                                        answer.userAnswer,
+                                        style: const TextStyle(color: Colors.red),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              if (!isCorrect) ...[
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    const Text('Correct: ',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                    Expanded(
+                                      child: MathText(
+                                        q.correctAnswer,
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
                           ),
-                        if (!isCorrect)
-                          Text(
-                            'Correct: ${q.correctAnswer}',
-                            style: const TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                        ),
                       ],
                     ),
                   ),

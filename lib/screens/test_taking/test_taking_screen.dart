@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../models/question_model.dart';
 import '../../models/test_model.dart';
 import '../../models/attempt_model.dart';
 import '../../models/profile_model.dart';
@@ -10,6 +11,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../widgets/math_text.dart';
 
 class TestTakingScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -215,6 +217,76 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  Widget _buildChoices(QuestionModel question) {
+    final selected = _answers[_currentIndex];
+    return Column(
+      children: [
+        for (int i = 0; i < (question.choices?.length ?? 0); i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _answers[_currentIndex] = question.choices![i];
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  side: BorderSide(
+                    color: selected == question.choices![i]
+                        ? Theme.of(context).colorScheme.primary
+                        : Colors.grey.shade300,
+                    width: selected == question.choices![i] ? 2 : 1,
+                  ),
+                  backgroundColor: selected == question.choices![i]
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                      : null,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: selected == question.choices![i]
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey.shade200,
+                      ),
+                      child: Center(
+                        child: Text(
+                          String.fromCharCode(65 + i), // A, B, C, D
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: selected == question.choices![i]
+                                ? Colors.white
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: MathText(
+                        question.choices![i],
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_test == null) {
@@ -287,50 +359,52 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    // Question card
+                    // Question card with LaTeX support
                     Card(
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
-                        child: Text(
+                        child: MathText(
                           question.question,
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Answer input
-                    TextField(
-                      controller: _answerController,
-                      focusNode: _answerFocusNode,
-                      keyboardType: TextInputType.text,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                    // Answer input — MCQ or text field
+                    if (question.isMultipleChoice)
+                      _buildChoices(question)
+                    else
+                      TextField(
+                        controller: _answerController,
+                        focusNode: _answerFocusNode,
+                        keyboardType: TextInputType.text,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Type your answer',
+                          hintStyle: TextStyle(
+                            color: Colors.grey.shade400,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          _answers[_currentIndex] = value;
+                        },
+                        autofocus: true,
                       ),
-                      decoration: InputDecoration(
-                        hintText: 'Type your answer',
-                        hintStyle: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontWeight: FontWeight.normal,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                      ),
-                      onChanged: (value) {
-                        _answers[_currentIndex] = value;
-                      },
-                      autofocus: true,
-                    ),
                   ],
                 ),
               ),
