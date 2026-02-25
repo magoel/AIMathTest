@@ -111,13 +111,20 @@ BOARD: ${boardLabel}
 - "fill_in_blank" (${fibCount} questions): Student types a numeric answer. Good for computation and short answers.
 - "multiple_choice" (${mcqCount} questions): Student picks from exactly 4 options. Good for conceptual questions, estimation, word problems. Include a "choices" array with 4 options. The correct answer must be one of the choices.
 
-═══ MATH NOTATION ═══
-Use LaTeX notation wrapped in dollar signs for mathematical expressions:
-- Fractions: $\\frac{2}{3}$
-- Exponents: $x^2$, $3^4$
-- Square roots: $\\sqrt{16}$
-- Use × for multiplication, ÷ for division in plain text
-- Keep it simple for ${gradeLabel} — use LaTeX only where it improves readability
+═══ MATH NOTATION (MANDATORY) ═══
+ALWAYS wrap ALL mathematical expressions in LaTeX dollar signs. This is critical for rendering.
+- Fractions: ALWAYS use $\\frac{2}{3}$ (never write "2/3" in questions)
+- Exponents: $x^2$, $3^4$, $2^{10}$
+- Square roots: $\\sqrt{16}$, $\\sqrt{25}$
+- Multiplication: $24 \\times 15$
+- Division: $144 \\div 12$
+- Variables and equations: $x + 5 = 12$, $2x - 3 = 7$
+- Mixed numbers: $2\\frac{1}{2}$
+- Comparisons: $\\frac{3}{4} > \\frac{1}{2}$
+- Even simple expressions in questions: "$5 + 3$" not "5 + 3"
+- Numbers in word problems can stay as plain text: "Riya has 8 apples"
+- Answers should be plain text/numbers (e.g., "180", "5/4") — NOT LaTeX
+- MCQ choices that contain math MUST use LaTeX: "$\\frac{3}{4}$" not "3/4"
 
 ═══ DIFFICULTY SCALING (${difficulty}/10) ═══
 - Level 1-3: Single-step, small numbers, direct application. Example: "Riya has 8 apples. She gives 3 to her friend. How many does she have left?"
@@ -138,18 +145,28 @@ ${strongTopics.length > 0 ? `STUDENT'S STRONG AREAS: ${strongTopics.join(", ")} 
 Fill-in-blank (word problem):
 {"question": "A train travels at 60 km/h for 3 hours. How many kilometers does it cover?", "answer": "180", "topic": "multiplication"}
 
-Fill-in-blank (with LaTeX):
-{"question": "What is $\\frac{3}{4} + \\frac{1}{2}$?", "answer": "5/4", "topic": "fractions"}
+Fill-in-blank (computation with LaTeX):
+{"question": "Calculate: $\\frac{3}{4} + \\frac{1}{2}$", "answer": "5/4", "topic": "fractions"}
 
-Multiple-choice:
-{"question": "A square has a perimeter of 36 cm. What is the length of each side?", "answer": "9", "topic": "geometry", "choices": ["6", "9", "12", "18"]}
+Fill-in-blank (algebra with LaTeX):
+{"question": "Solve: $2x + 5 = 17$. Find $x$.", "answer": "6", "topic": "algebra"}
+
+Fill-in-blank (arithmetic with LaTeX):
+{"question": "What is $125 \\times 8$?", "answer": "1000", "topic": "multiplication"}
+
+Multiple-choice (word problem):
+{"question": "A rectangle has length 12 cm and width 8 cm. What is its area?", "answer": "96", "topic": "geometry", "choices": ["80", "96", "40", "120"]}
 
 Multiple-choice (with LaTeX):
-{"question": "Which is the largest?", "answer": "$\\frac{3}{4}$", "topic": "fractions", "choices": ["$\\frac{1}{2}$", "$\\frac{3}{4}$", "$\\frac{2}{3}$", "$\\frac{1}{3}$"]}
+{"question": "Which fraction is the largest?", "answer": "$\\frac{3}{4}$", "topic": "fractions", "choices": ["$\\frac{1}{2}$", "$\\frac{3}{4}$", "$\\frac{2}{3}$", "$\\frac{1}{3}$"]}
+
+Multiple-choice (roots with LaTeX):
+{"question": "What is the value of $\\sqrt{144}$?", "answer": "12", "topic": "number_systems", "choices": ["11", "12", "13", "14"]}
 
 ═══ BAD QUESTIONS (AVOID) ═══
-- "5 + 3 = ?" (too bare, no context)
-- "12 × 4 = ?" (boring, repetitive)
+- "5 + 3 = ?" (too bare, no context, no LaTeX)
+- "What is 3/4 + 1/2?" (fractions not in LaTeX — MUST use $\\frac{3}{4} + \\frac{1}{2}$)
+- "12 × 4 = ?" (boring, and should be $12 \\times 4$)
 - Same pattern repeated multiple times
 
 ═══ OUTPUT FORMAT ═══
