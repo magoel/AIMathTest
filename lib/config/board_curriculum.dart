@@ -26,13 +26,25 @@ enum Board {
   }
 }
 
-/// Returns the set of topic keys available for a given board and grade.
-/// Shows topics from past 2 grades + current grade + next 1 grade,
-/// so students can review recent material and preview upcoming topics.
+/// Returns topics introduced in the window [grade-2 .. grade+1].
+/// For Grade 5: shows topics introduced in Grades 3, 4, 5, 6 —
+/// excludes basics mastered before the window, includes a preview
+/// of next grade's new topics.
 /// Grade: 0 = Kindergarten, 1-12 = Grade 1-12.
 Set<String> getAvailableTopics(Board board, int grade) {
   final maxGrade = (grade + 1).clamp(0, 12);
-  return _curriculumMap[board]![maxGrade]!;
+  final belowWindow = (grade - 3).clamp(0, 12);
+
+  final topSet = _curriculumMap[board]![maxGrade]!;
+
+  // For K-2 students, show the full cumulative set (no exclusion)
+  if (grade <= 2) return topSet;
+
+  final excludeSet = _curriculumMap[board]![belowWindow]!;
+  final windowed = topSet.difference(excludeSet);
+
+  // Safety: always return at least the current grade's full set if window is empty
+  return windowed.isNotEmpty ? windowed : topSet;
 }
 
 // Base topics available from kindergarten for most boards
