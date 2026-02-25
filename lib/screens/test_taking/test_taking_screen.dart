@@ -10,7 +10,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../widgets/number_pad.dart';
 
 class TestTakingScreen extends ConsumerStatefulWidget {
   final String testId;
@@ -36,6 +35,8 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
   Timer? _timer;
   int _elapsedSeconds = 0;
   bool _submitting = false;
+  final _answerController = TextEditingController();
+  final _answerFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -50,6 +51,8 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
   void dispose() {
     _timer?.cancel();
     _stopwatch.stop();
+    _answerController.dispose();
+    _answerFocusNode.dispose();
     super.dispose();
   }
 
@@ -64,29 +67,28 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
       _shuffleOrder = List.generate(_test!.questions.length, (i) => i);
       if (_retakeAttemptId != null) {
         _shuffleOrder.shuffle();
-        // Clear the provider so refreshing doesn't re-trigger shuffle
         ref.read(retakeAttemptIdProvider.notifier).state = null;
       }
+
+      _answerController.text = _answers[_currentIndex];
     }
   }
 
-  void _onKeyPressed(String key) {
+  void _goToQuestion(int index) {
+    // Save current answer before switching
+    _answers[_currentIndex] = _answerController.text;
     setState(() {
-      _answers[_currentIndex] += key;
+      _currentIndex = index;
+      _answerController.text = _answers[_currentIndex];
     });
-  }
-
-  void _onBackspace() {
-    if (_answers[_currentIndex].isNotEmpty) {
-      setState(() {
-        _answers[_currentIndex] = _answers[_currentIndex]
-            .substring(0, _answers[_currentIndex].length - 1);
-      });
-    }
+    _answerFocusNode.requestFocus();
   }
 
   Future<void> _submit() async {
-    final unanswered = _answers.where((a) => a.isEmpty).length;
+    // Save current answer
+    _answers[_currentIndex] = _answerController.text;
+
+    final unanswered = _answers.where((a) => a.trim().isEmpty).length;
     if (unanswered > 0) {
       final proceed = await showDialog<bool>(
         context: context,
@@ -159,7 +161,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
           ? recentAttempts.map((a) => a.percentage).reduce((a, b) => a + b) / totalTests
           : 0.0;
 
-      // Calculate streak: only increment if last test was on a different day
+      // Calculate streak
       final now = DateTime.now();
       final lastTest = profile.stats.lastTestAt;
       int newStreak;
@@ -170,13 +172,10 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
         final today = DateTime(now.year, now.month, now.day);
         final daysDiff = today.difference(lastDate).inDays;
         if (daysDiff == 0) {
-          // Same day — keep current streak
           newStreak = profile.stats.currentStreak;
         } else if (daysDiff == 1) {
-          // Consecutive day — increment
           newStreak = profile.stats.currentStreak + 1;
         } else {
-          // Gap — reset to 1
           newStreak = 1;
         }
       }
@@ -302,43 +301,35 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                    // Answer display
-                    Text(
-                      'Your Answer:',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
+                    // Answer input
+                    TextField(
+                      controller: _answerController,
+                      focusNode: _answerFocusNode,
+                      keyboardType: TextInputType.text,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Text(
-                        _answers[_currentIndex].isEmpty
-                            ? ' '
-                            : _answers[_currentIndex],
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      decoration: InputDecoration(
+                        hintText: 'Type your answer',
+                        hintStyle: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.normal,
                         ),
-                        textAlign: TextAlign.center,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Number pad
-                    NumberPad(
-                      onKeyPressed: _onKeyPressed,
-                      onBackspace: _onBackspace,
-                      showDecimal: _test!.config.topics.contains('decimals'),
-                      showNegative: _test!.config.topics.contains('algebra'),
+                      onChanged: (value) {
+                        _answers[_currentIndex] = value;
+                      },
+                      autofocus: true,
                     ),
                   ],
                 ),
@@ -353,7 +344,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                   if (_currentIndex > 0)
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => setState(() => _currentIndex--),
+                        onPressed: () => _goToQuestion(_currentIndex - 1),
                         icon: const Icon(Icons.arrow_back),
                         label: const Text('Previous'),
                       ),
@@ -364,7 +355,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                   if (_currentIndex < totalQuestions - 1)
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _currentIndex++),
+                        onPressed: () => _goToQuestion(_currentIndex + 1),
                         icon: const Icon(Icons.arrow_forward),
                         label: const Text('Next'),
                       ),
@@ -386,4 +377,3 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
     );
   }
 }
-
