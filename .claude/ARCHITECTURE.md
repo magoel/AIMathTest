@@ -52,7 +52,8 @@ AI-powered math test generator for kids (K-12) with native Android app and web a
 | **Backend** | Firebase | All-in-one: Auth, DB, Functions, Hosting |
 | **Database** | Firestore (NoSQL) | Real-time sync, offline support, free tier |
 | **Auth** | Firebase Auth | Google Sign-In built-in |
-| **AI** | Google Gemini 1.5 Flash | Cheapest, Firebase-friendly |
+| **AI** | Google Gemini 2.0 Flash | Cheapest, Firebase-friendly |
+| **Payments** | Google Play Billing (in_app_purchase) | Android subscriptions |
 | **Hosting (Web)** | Firebase Hosting | CDN, SSL, included |
 | **Analytics** | Firebase Analytics | Free, integrated |
 | **Crash Reporting** | Firebase Crashlytics | Free, integrated |
@@ -75,8 +76,12 @@ users/{parentId}
 ├── onboardingCompleted: boolean
 ├── lastActiveProfileId: string (remembers last child)
 └── subscription: {
-      plan: "free" | "premium",
-      expiresAt: timestamp | null
+      plan: "free" | "premium_monthly" | "premium_annual",
+      status: "none" | "active" | "expired" | "cancelled" | "grace_period",
+      purchaseToken: string,
+      productId: string,
+      expiresAt: timestamp | null,
+      lastVerifiedAt: timestamp | null
     }
 ```
 
@@ -88,6 +93,7 @@ users/{parentId}/profiles/{profileId}
 ├── name: string
 ├── avatar: string (emoji or asset path)
 ├── grade: number (0=K, 1-12)
+├── board: string ("cbse" | "ib" | "cambridge")
 ├── createdAt: timestamp
 └── stats: {
       totalTests: number,
@@ -173,6 +179,8 @@ Generates a personalized test using AI.
 // Request
 {
   profileId: string,
+  grade: number,
+  board: string,       // "cbse" | "ib" | "cambridge"
   topics: string[],
   difficulty: number,
   questionCount: number,
@@ -196,6 +204,31 @@ Generates a personalized test using AI.
 6. Save test to Firestore
 7. Return test data
 
+### Function: `verifyPurchase`
+Validates Google Play subscription purchases server-side.
+
+```typescript
+// Request
+{
+  purchaseToken: string,
+  productId: string,      // "premium_monthly" | "premium_annual"
+  source: string           // "google_play"
+}
+
+// Response
+{
+  status: string,          // "active" | "expired" | "cancelled" | "grace_period"
+  plan: string,
+  expiresAt: number
+}
+```
+
+**Logic:**
+1. Validate auth
+2. Call Google Play Developer API (subscriptionsv2) via REST
+3. Determine subscription status from response
+4. Write subscription data to Firestore `users/{userId}/subscription`
+
 ### Function: `cleanupExpiredTests`
 Scheduled function to delete old tests.
 
@@ -211,7 +244,7 @@ Scheduled function to delete old tests.
 ### Test Generation Prompt Template
 
 ```
-You are a math test generator for a {grade} grade student.
+You are a math test generator for a {grade} grade student following the {board} curriculum.
 
 Generate {questionCount} math problems with these requirements:
 - Topics: {topics}
@@ -259,7 +292,9 @@ aimathtest/
 │   ├── config/
 │   │   ├── routes.dart           # Route definitions
 │   │   ├── theme.dart            # App theme (colors, fonts)
-│   │   └── constants.dart        # App constants
+│   │   ├── constants.dart        # App constants & topic definitions
+│   │   ├── board_curriculum.dart  # Board enum & grade→topics mapping
+│   │   └── app_config.dart       # Firebase vs local mode toggle
 │   │
 │   ├── models/
 │   │   ├── user_model.dart       # Parent user
@@ -271,15 +306,16 @@ aimathtest/
 │   ├── services/
 │   │   ├── auth_service.dart     # Firebase Auth wrapper
 │   │   ├── database_service.dart # Firestore operations
-│   │   ├── ai_service.dart       # Cloud Function calls
+│   │   ├── ai_service.dart       # Cloud Function calls + local fallback
+│   │   ├── subscription_service.dart # Google Play Billing wrapper
 │   │   └── analytics_service.dart# Event tracking
 │   │
 │   ├── providers/
 │   │   ├── auth_provider.dart    # Auth state
-│   │   ├── user_provider.dart    # Current user data
+│   │   ├── user_provider.dart    # Current user data + DB wrappers
 │   │   ├── profile_provider.dart # Profiles & active profile
 │   │   ├── test_provider.dart    # Test state
-│   │   └── attempt_provider.dart # Current attempt state
+│   │   └── subscription_provider.dart # Billing state & isPremium
 │   │
 │   ├── screens/
 │   │   ├── landing/
@@ -320,6 +356,7 @@ aimathtest/
 │   ├── src/
 │   │   ├── index.ts
 │   │   ├── generateTest.ts
+│   │   ├── verifyPurchase.ts
 │   │   └── cleanupExpiredTests.ts
 │   ├── package.json
 │   └── tsconfig.json

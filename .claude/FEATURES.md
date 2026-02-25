@@ -13,7 +13,7 @@ Parent (Google Login)
 ```
 
 - **Parent Account**: Google Sign-In, manages all child profiles
-- **Child Profiles**: Name, avatar, grade (K-12) — no separate login required
+- **Child Profiles**: Name, avatar, grade (K-12), board (CBSE/IB/Cambridge) — no separate login required
 - **Profile Switcher**: "Who's practicing today?" screen on app launch
 - **Multi-Child Support**: Unlimited child profiles per parent
 
@@ -28,17 +28,19 @@ Parent (Google Login)
 
 ### 2. Child Profiles
 - Create/edit/delete profiles
-- Fields: Name, Avatar, Grade (K-12)
+- Fields: Name, Avatar, Grade (K-12), Board (CBSE/IB/Cambridge)
 - Per-profile progress tracking
+- Board selection determines available topics per grade
 
 ### 3. Test Configuration
-- **Topics** (multi-select): Addition, Subtraction, Multiplication, Division, Fractions, Decimals, Percentages, Geometry, Algebra, Word Problems
+- **Topics** (multi-select, filtered by board+grade): Addition, Subtraction, Multiplication, Division, Fractions, Decimals, Percentages, Geometry, Algebra, Word Problems, Measurement, Data Handling, Ratio & Proportion, Probability, Trigonometry, Number Systems, Calculus
 - **Difficulty**: 1-10 slider
 - **Length**: 5 / 10 / 15 / 20 questions
 - **Mode**: Timed or Untimed
 
 ### 4. AI-Powered Test Generation
-- Real-time generation via AI (e.g., GPT-4 / Gemini)
+- Real-time generation via Gemini 2.0 Flash (Cloud Function)
+- Board-aware: generates questions matching curriculum style (CBSE/IB/Cambridge)
 - Personalized based on child's past performance
 - Targets weak areas (~30% reinforcement problems)
 - Avoids recently seen problem patterns
@@ -73,12 +75,16 @@ Parent (Google Login)
 
 ---
 
-## Subscription Model (Future)
+## Subscription Model
 
-| Tier | Features |
-|------|----------|
-| **Free** | 5 tests/day, basic progress tracking |
-| **Premium** | Unlimited tests, detailed analytics, no ads, export reports |
+| Tier | Features | Price |
+|------|----------|-------|
+| **Free** | 5 tests/day, basic progress tracking | Free |
+| **Premium Monthly** | Unlimited tests | ₹50/month |
+| **Premium Annual** | Unlimited tests | ₹500/year |
+
+- Payment via Google Play Billing (Android only)
+- Server-side receipt validation via `verifyPurchase` Cloud Function
 
 ---
 

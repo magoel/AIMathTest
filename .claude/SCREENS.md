@@ -71,11 +71,13 @@ Landing → Login → Onboarding Step 1 → Step 2 → Step 3 → Home
 - Avatar picker
 - Name input
 - Grade dropdown (K-12)
+- Board dropdown (CBSE, IB, Cambridge) — defaults to CBSE
 - Continue button
 
 **Validation:**
 - Name required
 - Grade required
+- Board required (defaults to CBSE)
 - Avatar defaults to first option
 
 ---
@@ -349,7 +351,7 @@ Uses standard Test Taking screen with:
 ```
 
 **Elements:**
-- Topic chips (multi-select, show checkmark when selected)
+- Topic chips (multi-select, filtered by child's board+grade)
 - Difficulty slider (1-10)
 - Question count selector (5/10/15/20)
 - Timed mode toggle
@@ -358,6 +360,7 @@ Uses standard Test Taking screen with:
 **Validation:**
 - At least 1 topic must be selected
 - Show error toast if no topic selected
+- Topics automatically filtered based on active profile's board and grade
 
 **Actions:**
 - "Start Test" → Test Taking (generates test via AI)
@@ -643,6 +646,7 @@ Uses standard Test Taking screen with:
 - Avatar picker (grid of emoji/icons)
 - Name input
 - Grade dropdown (K, 1-12)
+- Board dropdown (CBSE, IB, Cambridge)
 - Save button
 - Delete button (edit mode only, with confirmation)
 
