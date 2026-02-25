@@ -381,7 +381,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                       TextField(
                         controller: _answerController,
                         focusNode: _answerFocusNode,
-                        keyboardType: TextInputType.text,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
