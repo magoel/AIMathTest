@@ -27,24 +27,30 @@ enum Board {
 }
 
 /// Returns topics introduced in the window [grade-2 .. grade+1].
-/// For Grade 5: shows topics introduced in Grades 3, 4, 5, 6 —
-/// excludes basics mastered before the window, includes a preview
-/// of next grade's new topics.
+/// Guarantees at least 4 topics by expanding the window downward
+/// into earlier grades if needed.
 /// Grade: 0 = Kindergarten, 1-12 = Grade 1-12.
 Set<String> getAvailableTopics(Board board, int grade) {
   final maxGrade = (grade + 1).clamp(0, 12);
-  final belowWindow = (grade - 3).clamp(0, 12);
-
   final topSet = _curriculumMap[board]![maxGrade]!;
 
-  // For K-2 students, show the full cumulative set (no exclusion)
+  // For K-2 students, show the full cumulative set
   if (grade <= 2) return topSet;
 
-  final excludeSet = _curriculumMap[board]![belowWindow]!;
-  final windowed = topSet.difference(excludeSet);
+  // Start with the default window: exclude topics from (grade-3) and below
+  var belowWindow = (grade - 3).clamp(0, 12);
+  var excludeSet = _curriculumMap[board]![belowWindow]!;
+  var windowed = topSet.difference(excludeSet);
 
-  // Safety: always return at least the current grade's full set if window is empty
-  return windowed.isNotEmpty ? windowed : topSet;
+  // Expand window downward until we have at least 4 topics
+  while (windowed.length < 4 && belowWindow > 0) {
+    belowWindow--;
+    excludeSet = _curriculumMap[board]![belowWindow]!;
+    windowed = topSet.difference(excludeSet);
+  }
+
+  // If still under 4, return the full cumulative set
+  return windowed.length >= 4 ? windowed : topSet;
 }
 
 // Base topics available from kindergarten for most boards
