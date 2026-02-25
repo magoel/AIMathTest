@@ -17,13 +17,23 @@ class MathText extends StatelessWidget {
     this.alignment = WrapAlignment.center,
   });
 
+  /// Clean up LaTeX string — fix common escaping issues from JSON/Firestore.
+  static String _cleanLatex(String tex) {
+    var cleaned = tex;
+    // Fix double-escaped backslashes from JSON serialization
+    // e.g., \\frac -> \frac, \\sqrt -> \sqrt
+    cleaned = cleaned.replaceAll('\\\\', '\\');
+    return cleaned;
+  }
+
   @override
   Widget build(BuildContext context) {
     final defaultStyle = style ?? Theme.of(context).textTheme.bodyLarge!;
+    final cleanedText = _cleanLatex(text);
 
     // If no LaTeX markers, render as plain text
-    if (!text.contains('\$')) {
-      return Text(text, style: defaultStyle, textAlign: textAlign);
+    if (!cleanedText.contains('\$')) {
+      return Text(cleanedText, style: defaultStyle, textAlign: textAlign);
     }
 
     // Split on $...$ patterns
@@ -31,29 +41,39 @@ class MathText extends StatelessWidget {
     final regex = RegExp(r'\$(.+?)\$');
     int lastEnd = 0;
 
-    for (final match in regex.allMatches(text)) {
+    for (final match in regex.allMatches(cleanedText)) {
       // Add plain text before the match
       if (match.start > lastEnd) {
         parts.add(TextSpan(
-          text: text.substring(lastEnd, match.start),
+          text: cleanedText.substring(lastEnd, match.start),
           style: defaultStyle,
         ));
       }
-      // Add math widget
-      parts.add(WidgetSpan(
-        alignment: PlaceholderAlignment.middle,
-        child: Math.tex(
-          match.group(1)!,
-          textStyle: defaultStyle.copyWith(fontSize: (defaultStyle.fontSize ?? 16) * 1.1),
-        ),
-      ));
+      // Add math widget — wrap in try/catch to gracefully handle parse errors
+      final texContent = match.group(1)!;
+      try {
+        parts.add(WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Math.tex(
+            texContent,
+            textStyle: defaultStyle.copyWith(fontSize: (defaultStyle.fontSize ?? 16) * 1.1),
+            onErrorFallback: (error) => Text(
+              texContent,
+              style: defaultStyle,
+            ),
+          ),
+        ));
+      } catch (_) {
+        // If LaTeX parsing fails, show as plain text
+        parts.add(TextSpan(text: texContent, style: defaultStyle));
+      }
       lastEnd = match.end;
     }
 
     // Add remaining plain text
-    if (lastEnd < text.length) {
+    if (lastEnd < cleanedText.length) {
       parts.add(TextSpan(
-        text: text.substring(lastEnd),
+        text: cleanedText.substring(lastEnd),
         style: defaultStyle,
       ));
     }
