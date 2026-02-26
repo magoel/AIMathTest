@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../models/profile_model.dart';
 import '../models/test_model.dart';
 import '../models/attempt_model.dart';
+import '../models/feedback_model.dart';
 
 class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -162,5 +163,11 @@ class DatabaseService {
         .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
         .get();
     return snapshot.docs.length;
+  }
+
+  // ── Feedback ──
+
+  Future<void> saveFeedback(FeedbackModel feedback) async {
+    await _db.collection('feedback').doc(feedback.id).set(feedback.toFirestore());
   }
 }

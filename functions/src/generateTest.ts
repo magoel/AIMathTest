@@ -101,6 +101,23 @@ TOPICS: ${topics.join(", ")}
 DIFFICULTY: ${difficulty}/10
 BOARD: ${boardLabel}
 
+═══ SUB-TOPICS — VARY WITHIN EACH TOPIC (MANDATORY) ═══
+For each selected topic, cover DIFFERENT sub-topics across questions. Do NOT repeat the same sub-topic.
+- addition/subtraction/multiplication/division: word problems, multi-digit, estimation, mental math
+- fractions: addition, subtraction, multiplication, comparison, mixed numbers, simplification
+- decimals: operations, conversion from fractions, place value, rounding
+- percentages: finding percentage, percentage increase/decrease, discount, profit & loss
+- algebra: linear equations, quadratic equations, polynomials, factorization, inequalities, sequences & series, simultaneous equations
+- geometry: area, perimeter, volume, surface area, angles, triangles, circles, coordinate geometry, Pythagoras
+- trigonometry: sin/cos/tan ratios, identities ($\\sin^2\\theta + \\cos^2\\theta = 1$), trigonometric equations, inverse trig, heights & distances, graphs of trig functions
+- calculus: differentiation (power rule, chain rule, product rule), integration (definite & indefinite), limits, area under curve, maxima/minima
+- number_systems: real numbers, surds & rationalization, prime factorization, HCF/LCM, irrational numbers
+- probability: basic probability, complementary events, independent events, conditional probability, combinations/permutations
+- data_handling: mean/median/mode, range, frequency distribution, bar/pie charts, interpretation
+- ratio_proportion: direct/inverse proportion, unitary method, speed-distance-time, work problems
+- measurement: unit conversion, area/volume of real objects, time calculations
+- word_problems: multi-step, real-world scenarios, mixed operations
+
 ═══ QUESTION VARIETY (MANDATORY) ═══
 - At least 40% must be WORD PROBLEMS with real-world context (shopping, travel, cooking, sports, etc.)
 - No more than 30% should be bare arithmetic like "X + Y = ?"

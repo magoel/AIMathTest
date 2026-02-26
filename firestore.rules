@@ -30,5 +30,13 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null
         && resource.data.parentId == request.auth.uid;
     }
+
+    // Feedback — authenticated users can create, only read their own
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null
+        && request.resource.data.parentId == request.auth.uid;
+      allow read: if request.auth != null
+        && resource.data.parentId == request.auth.uid;
+    }
   }
 }

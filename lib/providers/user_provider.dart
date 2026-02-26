@@ -4,6 +4,7 @@ import '../models/user_model.dart';
 import '../models/profile_model.dart';
 import '../models/test_model.dart';
 import '../models/attempt_model.dart';
+import '../models/feedback_model.dart';
 import '../services/database_service.dart';
 import '../services/local_database_service.dart';
 import 'auth_provider.dart';
@@ -145,5 +146,9 @@ class FirebaseDatabaseWrapper extends LocalDatabaseService {
   @override
   Future<int> getTodayAttemptCount(String parentId, String profileId) =>
       _fb.getTodayAttemptCount(parentId, profileId);
+
+  @override
+  Future<void> saveFeedback(FeedbackModel feedback) =>
+      _fb.saveFeedback(feedback);
 }
 

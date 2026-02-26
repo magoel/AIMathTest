@@ -2,6 +2,7 @@ import '../models/user_model.dart';
 import '../models/profile_model.dart';
 import '../models/test_model.dart';
 import '../models/attempt_model.dart';
+import '../models/feedback_model.dart';
 import 'dart:async';
 
 /// In-memory database for local demo mode (no Firebase needed).
@@ -190,6 +191,10 @@ class LocalDatabaseService {
             a.profileId == profileId &&
             a.completedAt.isAfter(startOfDay))
         .length;
+  }
+
+  Future<void> saveFeedback(FeedbackModel feedback) async {
+    // No-op in local mode
   }
 
   void dispose() {
