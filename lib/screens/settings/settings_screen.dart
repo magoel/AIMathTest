@@ -383,13 +383,17 @@ class _SubscriptionCard extends ConsumerWidget {
       );
     }
 
-    final todayUsed = attemptsAsync.whenOrNull(data: (attempts) {
+    final monthUsed = attemptsAsync.whenOrNull(data: (attempts) {
       final now = DateTime.now();
-      final startOfDay = DateTime(now.year, now.month, now.day);
-      return attempts.where((a) => a.completedAt.isAfter(startOfDay)).length;
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final uniqueTests = attempts
+          .where((a) => a.completedAt.isAfter(startOfMonth))
+          .map((a) => a.testId)
+          .toSet();
+      return uniqueTests.length;
     }) ?? 0;
-    final remaining = (AppConstants.freeTestDailyLimit - todayUsed)
-        .clamp(0, AppConstants.freeTestDailyLimit);
+    final remaining = (AppConstants.freeTestMonthlyLimit - monthUsed)
+        .clamp(0, AppConstants.freeTestMonthlyLimit);
 
     return Card(
       child: Column(
@@ -399,7 +403,7 @@ class _SubscriptionCard extends ConsumerWidget {
             leading: const Icon(Icons.diamond_outlined),
             title: const Text('Free Plan'),
             subtitle: Text(
-                '$remaining of ${AppConstants.freeTestDailyLimit} tests remaining today'),
+                '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month'),
           ),
           if (canUpgrade)
             Padding(

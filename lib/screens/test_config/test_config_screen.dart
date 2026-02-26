@@ -41,19 +41,19 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
       final profile = ref.read(activeProfileProvider);
       if (user == null || profile == null) throw Exception('Not authenticated');
 
-      // Check daily test limit (skip for premium users)
+      // Check monthly test limit (skip for premium users)
       final isPremium = ref.read(isPremiumProvider);
       if (!isPremium) {
         final db = ref.read(databaseServiceProvider);
-        final todayCount = await db.getTodayAttemptCount(user.uid, profile.id);
-        if (todayCount >= AppConstants.freeTestDailyLimit) {
+        final monthCount = await db.getMonthTestCount(user.uid, profile.id);
+        if (monthCount >= AppConstants.freeTestMonthlyLimit) {
           if (mounted) {
             await showDialog(
               context: context,
               builder: (ctx) => AlertDialog(
-                title: const Text('Daily Limit Reached'),
-                content: const Text(
-                  'You\'ve used all 5 free tests for today.\n\n'
+                title: const Text('Monthly Limit Reached'),
+                content: Text(
+                  'You\'ve used all ${AppConstants.freeTestMonthlyLimit} free tests for this month.\n\n'
                   'Upgrade to Premium for unlimited tests!',
                 ),
                 actions: [
