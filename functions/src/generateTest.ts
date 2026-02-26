@@ -207,8 +207,24 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
         },
       });
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      // Retry with exponential backoff for transient errors (429, 503)
+      let text = "";
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const result = await model.generateContent(prompt);
+          text = result.response.text();
+          break;
+        } catch (retryErr: unknown) {
+          const msg = retryErr instanceof Error ? retryErr.message : String(retryErr);
+          if ((msg.includes("429") || msg.includes("503")) && attempt < 2) {
+            const delay = Math.pow(2, attempt + 1) * 1000; // 2s, 4s
+            console.log(`Gemini API rate limited (attempt ${attempt + 1}), retrying in ${delay}ms...`);
+            await new Promise((r) => setTimeout(r, delay));
+            continue;
+          }
+          throw retryErr;
+        }
+      }
 
       // Parse response
       let jsonStr = text.trim();
