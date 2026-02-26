@@ -405,6 +405,31 @@ class _SubscriptionCard extends ConsumerWidget {
             subtitle: Text(
                 '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month'),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Upgrade to Premium for unlimited tests:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '  \u2022  Monthly: \u20B950/month\n'
+                  '  \u2022  Annual: \u20B9500/year (save 17%)',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (canUpgrade)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
