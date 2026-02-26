@@ -406,7 +406,7 @@ class _SubscriptionCard extends ConsumerWidget {
                 '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month'),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.fromLTRB(72, 0, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
