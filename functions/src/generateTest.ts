@@ -218,22 +218,29 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
           .replace(/\n?```$/, "");
       }
 
-      const parsed = JSON.parse(jsonStr);
+      // Fix LaTeX backslashes BEFORE JSON.parse().
+      // The AI may output \frac, \sqrt, \theta etc. with single backslashes
+      // inside JSON strings. \f, \b, \t are valid JSON escapes that would
+      // be misinterpreted. We need to double-escape them so JSON.parse()
+      // preserves the backslash.
+      // Match backslash followed by a letter that starts a LaTeX command
+      // (but NOT already-valid JSON escapes like \n, \r, \t, \\, \", \/)
+      jsonStr = jsonStr.replace(/\\([a-zA-Z])/g, "\\\\$1");
+      // But restore the valid JSON escapes we just broke
+      jsonStr = jsonStr.replace(/\\\\n/g, "\\n");
+      jsonStr = jsonStr.replace(/\\\\r/g, "\\r");
+      jsonStr = jsonStr.replace(/\\\\t/g, "\\t");
 
-      // Fix JSON escape sequences that break LaTeX commands.
-      // JSON.parse() converts \f to form feed (0x0C) and \b to backspace (0x08),
-      // but these are needed as literal \frac, \binom etc. in LaTeX.
-      const fixLatex = (s: string): string =>
-        s.replace(/\x0C/g, "\\f").replace(/\x08/g, "\\b");
+      const parsed = JSON.parse(jsonStr);
 
       const questions: Question[] = parsed.map(
         (q: { question: string; answer: string; topic: string; choices?: string[] }, i: number) => ({
           id: `q${i + 1}`,
           type: q.choices ? "multiple_choice" : "fill_in_blank",
-          question: fixLatex(q.question),
-          correctAnswer: fixLatex(String(q.answer)),
+          question: q.question,
+          correctAnswer: String(q.answer),
           topic: q.topic,
-          ...(q.choices ? { choices: q.choices.map(fixLatex) } : {}),
+          ...(q.choices ? { choices: q.choices } : {}),
         })
       );
 
