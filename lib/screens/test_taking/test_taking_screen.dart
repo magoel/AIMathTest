@@ -366,8 +366,9 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                         padding: const EdgeInsets.all(24),
                         child: MathText(
                           question.question,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                           ),
                         ),
                       ),
