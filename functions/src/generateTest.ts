@@ -39,7 +39,7 @@ function generateShareCode(): string {
 }
 
 export const generateTest = onCall(
-  { secrets: [geminiApiKey] },
+  { secrets: [geminiApiKey], timeoutSeconds: 120 },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be logged in");
@@ -217,20 +217,25 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
         },
       });
 
-      // Retry with exponential backoff for transient errors (429, 503)
+      // Retry with longer backoff for rate limit errors (429, 503)
+      const retryDelays = [5000, 15000, 30000]; // 5s, 15s, 30s
       let text = "";
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
         try {
           const result = await model.generateContent(prompt);
           text = result.response.text();
           break;
         } catch (retryErr: unknown) {
           const msg = retryErr instanceof Error ? retryErr.message : String(retryErr);
-          if ((msg.includes("429") || msg.includes("503")) && attempt < 2) {
-            const delay = Math.pow(2, attempt + 1) * 1000; // 2s, 4s
-            console.log(`Gemini API rate limited (attempt ${attempt + 1}), retrying in ${delay}ms...`);
+          if ((msg.includes("429") || msg.includes("503")) && attempt < retryDelays.length) {
+            const delay = retryDelays[attempt];
+            console.log(`Gemini API rate limited (attempt ${attempt + 1}/${retryDelays.length + 1}), retrying in ${delay / 1000}s...`);
             await new Promise((r) => setTimeout(r, delay));
             continue;
+          }
+          // Give a friendlier error for rate limits
+          if (msg.includes("429")) {
+            throw new Error("AI service is busy. Please wait a moment and try again.");
           }
           throw retryErr;
         }
