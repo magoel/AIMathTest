@@ -370,6 +370,7 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
+                          textAlign: TextAlign.left,
                         ),
                       ),
                     ),
