@@ -143,11 +143,21 @@ ALWAYS wrap ALL mathematical expressions in LaTeX dollar signs. This is critical
 - Answers should be plain text/numbers (e.g., "180", "5/4") — NOT LaTeX
 - MCQ choices that contain math MUST use LaTeX: "$\\frac{3}{4}$" not "3/4"
 
-═══ DIFFICULTY SCALING (${difficulty}/10) ═══
-- Level 1-3: Single-step, small numbers, direct application. Example: "Riya has 8 apples. She gives 3 to her friend. How many does she have left?"
-- Level 4-6: Multi-step, moderate numbers, some reasoning. Example: "A shop sells notebooks for ₹45 each. If Amit buys 6 notebooks and pays with a ₹500 note, how much change does he get?"
-- Level 7-8: Complex, combines concepts, real-world application. Example: "A rectangular garden is 12m long and 8m wide. A path 1m wide runs around the outside. What is the area of the path?"
-- Level 9-10: Competition-level, creative problem solving. Example: "Find the smallest 3-digit number that leaves a remainder of 2 when divided by 3, 5, and 7."
+═══ DIFFICULTY SCALING (${difficulty}/10) — EACH LEVEL IS TWICE AS HARD ═══
+The difficulty MUST increase exponentially. Level 5 should be noticeably harder than level 4. Level 10 should feel nearly impossible for most students.
+
+Level 1: Trivial single-step, single-digit numbers. "What is $3 + 2$?"
+Level 2: Single-step, double-digit numbers. "What is $15 + 28$?"
+Level 3: Single-step word problems with small numbers. "Riya has 8 apples. She gives 3 away. How many left?"
+Level 4: Two-step problems, moderate numbers. "A shop sells pens for ₹12 each. Priya buys 5 pens and 3 notebooks at ₹25 each. How much does she spend?"
+Level 5: Multi-step with mixed operations, requires planning. "A train covers 240 km in 4 hours. Another train covers 180 km in 3 hours. How much faster is the second train in km/h?"
+Level 6: Problems requiring conceptual understanding, not just computation. "If $\\frac{2}{5}$ of a number is 30, what is $\\frac{3}{4}$ of the same number?"
+Level 7: Complex multi-concept problems. "A cylindrical tank of radius 7 cm and height 10 cm is filled with water. If the water is poured into a rectangular box of length 22 cm and width 10 cm, what is the height of water?"
+Level 8: Problems requiring insight or non-obvious approach. "The sum of three consecutive odd numbers is 75. What is the product of the smallest and largest of these numbers?"
+Level 9: Olympiad-style problems requiring creative thinking. "How many 3-digit numbers are there where the sum of the digits equals 25?"
+Level 10: Competition math — requires multiple insights, elegant reasoning. "Find all integer solutions to $x^2 - y^2 = 2025$ where $x > y > 0$."
+
+IMPORTANT: You are generating for difficulty ${difficulty}/10. Make sure ALL questions match this difficulty level. Do NOT generate easy questions at high difficulty levels.
 
 ═══ BOARD-SPECIFIC STYLE ═══
 ${boardLabel === "CBSE" ? "Use Indian context (₹ currency, Indian names like Riya/Amit/Priya, Indian units, NCERT-style phrasing)" : ""}
