@@ -399,14 +399,29 @@ class _SubscriptionCard extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(
-            leading: const Icon(Icons.diamond_outlined),
-            title: const Text('Free Plan'),
-            subtitle: Text(
-                '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.diamond_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    const Text('Free Plan',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ),
+              ],
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(72, 0, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
