@@ -77,18 +77,28 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
   }
 
   void _goToQuestion(int index) {
-    // Save current answer before switching
-    _answers[_currentIndex] = _answerController.text;
+    // Save current answer before switching (only for fill-in-blank;
+    // MCQ answers are saved directly in _buildChoices)
+    final currentQ = _test!.questions[_shuffleOrder[_currentIndex]];
+    if (!currentQ.isMultipleChoice) {
+      _answers[_currentIndex] = _answerController.text;
+    }
     setState(() {
       _currentIndex = index;
-      _answerController.text = _answers[_currentIndex];
+      final nextQ = _test!.questions[_shuffleOrder[index]];
+      _answerController.text = nextQ.isMultipleChoice ? '' : _answers[index];
     });
-    _answerFocusNode.requestFocus();
+    if (!_test!.questions[_shuffleOrder[index]].isMultipleChoice) {
+      _answerFocusNode.requestFocus();
+    }
   }
 
   Future<void> _submit() async {
-    // Save current answer
-    _answers[_currentIndex] = _answerController.text;
+    // Save current answer (only for fill-in-blank; MCQ saved in _buildChoices)
+    final currentQ = _test!.questions[_shuffleOrder[_currentIndex]];
+    if (!currentQ.isMultipleChoice) {
+      _answers[_currentIndex] = _answerController.text;
+    }
 
     final unanswered = _answers.where((a) => a.trim().isEmpty).length;
     if (unanswered > 0) {

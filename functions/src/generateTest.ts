@@ -126,7 +126,7 @@ For each selected topic, cover DIFFERENT sub-topics across questions. Do NOT rep
 
 ═══ QUESTION TYPES ═══
 - "fill_in_blank" (${fibCount} questions): Student types a numeric answer. Good for computation and short answers.
-- "multiple_choice" (${mcqCount} questions): Student picks from exactly 4 options. Good for conceptual questions, estimation, word problems. Include a "choices" array with 4 options. The correct answer must be one of the choices.
+- "multiple_choice" (${mcqCount} questions): Student picks from exactly 4 options. Good for conceptual questions, estimation, word problems. Include a "choices" array with 4 options. CRITICAL: Exactly ONE choice must be the correct answer. The other 3 must be clearly wrong (plausible distractors, but unambiguously incorrect). Never generate MCQs where multiple choices could be considered correct.
 
 ═══ MATH NOTATION (MANDATORY) ═══
 ALWAYS wrap ALL mathematical expressions in LaTeX dollar signs. This is critical for rendering.
