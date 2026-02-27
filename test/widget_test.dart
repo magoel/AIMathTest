@@ -1,8 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:aimathtest/models/question_model.dart';
+import 'package:aimathtest/config/constants.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
-    // Basic smoke test - will be expanded as app develops
-    expect(1 + 1, 2);
+  test('App smoke test - core models and constants load', () {
+    final q = QuestionModel(
+      id: 'smoke',
+      question: 'Is this working?',
+      correctAnswer: 'yes',
+      topic: 'addition',
+    );
+    expect(q.id, 'smoke');
+    expect(AppConstants.appName, 'AIMathTest');
+    expect(AppConstants.freeTestMonthlyLimit, 10);
   });
 }
