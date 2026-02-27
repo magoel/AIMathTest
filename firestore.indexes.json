@@ -23,7 +23,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "createdBy.parentId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
     }
   ],
