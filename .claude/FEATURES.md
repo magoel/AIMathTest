@@ -42,6 +42,11 @@ Parent (Google Login)
 - Real-time generation via Gemini 2.0 Flash (Cloud Function)
 - Board-aware: generates questions matching curriculum style (CBSE/IB/Cambridge)
 - Personalized based on child's past performance
+- MCQ support: ~40% multiple choice, ~60% fill-in-blank
+- LaTeX rendering for equations (fractions, exponents, roots, etc.)
+- Exponential difficulty scaling (Level 1-10, each twice as hard)
+- Mandatory sub-topic diversity per topic
+- Retry with backoff for API rate limits
 - Targets weak areas (~30% reinforcement problems)
 - Avoids recently seen problem patterns
 
@@ -57,9 +62,15 @@ Parent (Google Login)
 - Compare previous vs new score
 
 ### 7. Test Taking Experience
-- Clean, kid-friendly UI
+- Clean, kid-friendly UI with LaTeX math rendering
+- Fill-in-blank (numeric keypad) and multiple-choice (A/B/C/D buttons) questions
 - Timer display (if timed mode)
 - Submit and instant grading
+
+### 10. Feedback System
+- Persistent "Feedback" tab on right edge of every screen
+- Star rating (1-5) + free-text message
+- Stored in Firestore for analysis
 
 ### 8. Results & Progress
 - Score + correct/incorrect breakdown
@@ -79,12 +90,14 @@ Parent (Google Login)
 
 | Tier | Features | Price |
 |------|----------|-------|
-| **Free** | 5 tests/day, basic progress tracking | Free |
+| **Free** | 10 tests/month, basic progress tracking | Free |
 | **Premium Monthly** | Unlimited tests | ₹50/month |
-| **Premium Annual** | Unlimited tests | ₹500/year |
+| **Premium Annual** | Unlimited tests | ₹500/year (save 17%) |
 
 - Payment via Google Play Billing (Android only)
 - Server-side receipt validation via `verifyPurchase` Cloud Function
+- Pricing displayed transparently on settings screen
+- Retakes don't count toward monthly limit
 
 ---
 

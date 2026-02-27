@@ -419,8 +419,10 @@ Uses standard Test Taking screen with:
 - Submit button (enabled when all answered OR always visible)
 
 **Question Types Supported:**
-- Fill-in-the-blank (numeric answer)
-- Multiple choice (future enhancement)
+- Fill-in-the-blank (numeric keypad input)
+- Multiple choice (A/B/C/D choice buttons)
+- LaTeX rendering for math expressions ($\frac{3}{4}$, $\sqrt{16}$, $x^2$)
+- Questions left-aligned, font size 18px
 
 **Actions:**
 - Enter answer → auto-save, enable Next
@@ -579,9 +581,17 @@ Uses standard Test Taking screen with:
 │                                     │
 │  💎 SUBSCRIPTION                    │
 │  ┌─────────────────────────────┐    │
-│  │ Free Plan                   │    │
-│  │ 3 of 5 tests used today     │    │
-│  │ [Upgrade to Premium]        │    │
+│  │ 💎 Free Plan                │    │
+│  │ X of 10 tests remaining     │    │
+│  │ this month                  │    │
+│  │                             │    │
+│  │ Upgrade to Premium for      │    │
+│  │ unlimited tests:            │    │
+│  │  • Monthly: ₹50/month      │    │
+│  │  • Annual: ₹500/year       │    │
+│  │    (save 17%)               │    │
+│  │                             │    │
+│  │ [★ Upgrade to Premium]      │    │
 │  └─────────────────────────────┘    │
 │                                     │
 │  ┌─────────────────────────────┐    │
@@ -598,8 +608,11 @@ Uses standard Test Taking screen with:
 - Add new profile option
 - Switch profile button
 - Account info (email)
-- Subscription status and upgrade CTA
+- Subscription status with transparent pricing and upgrade CTA
 - Sign out button
+
+**Persistent on all screens:**
+- "Feedback" vertical tab on right edge → opens star rating + message dialog
 
 **Actions:**
 - Edit profile → Edit Profile modal

@@ -52,7 +52,8 @@ AI-powered math test generator for kids (K-12) with native Android app and web a
 | **Backend** | Firebase | All-in-one: Auth, DB, Functions, Hosting |
 | **Database** | Firestore (NoSQL) | Real-time sync, offline support, free tier |
 | **Auth** | Firebase Auth | Google Sign-In built-in |
-| **AI** | Google Gemini 2.0 Flash | Cheapest, Firebase-friendly |
+| **AI** | Google Gemini 2.0 Flash (Paid Tier 1) | 2000 RPM, retry with backoff |
+| **Math Rendering** | flutter_math_fork | LaTeX equations in questions |
 | **Payments** | Google Play Billing (in_app_purchase) | Android subscriptions |
 | **Hosting (Web)** | Firebase Hosting | CDN, SSL, included |
 | **Analytics** | Firebase Analytics | Free, integrated |
@@ -123,10 +124,11 @@ tests/{testId}
 │   }
 ├── questions: array<{
 │     id: string,
-│     type: "fill_in_blank",
-│     question: string,
+│     type: "fill_in_blank" | "multiple_choice",
+│     question: string (may contain LaTeX $...$),
 │     correctAnswer: string,
-│     topic: string
+│     topic: string,
+│     choices?: array<string> (4 options for MCQ, may contain LaTeX)
 │   }>
 ├── createdAt: timestamp
 └── expiresAt: timestamp (+3 months)
@@ -153,6 +155,19 @@ attempts/{attemptId}
 ├── isRetake: boolean
 ├── previousAttemptId: string | null
 └── completedAt: timestamp
+```
+
+### Collection: `feedback`
+User feedback for analysis.
+
+```
+feedback/{feedbackId}
+├── parentId: string
+├── profileId: string | null
+├── message: string
+├── rating: number (1-5)
+├── screen: string
+└── createdAt: timestamp
 ```
 
 ### Indexes Required
@@ -244,7 +259,9 @@ Scheduled function to delete old tests.
 ### Test Generation Prompt Template
 
 ```
-You are a math test generator for a {grade} grade student following the {board} curriculum.
+You are an expert {board} math teacher creating an engaging test for a {grade} student.
+(Includes: sub-topic diversity, exponential difficulty scaling 1-10, mandatory LaTeX,
+40% word problems, 40% MCQ, board-specific style)
 
 Generate {questionCount} math problems with these requirements:
 - Topics: {topics}
@@ -308,7 +325,8 @@ aimathtest/
 │   │   ├── database_service.dart # Firestore operations
 │   │   ├── ai_service.dart       # Cloud Function calls + local fallback
 │   │   ├── subscription_service.dart # Google Play Billing wrapper
-│   │   └── analytics_service.dart# Event tracking
+│   │   ├── analytics_service.dart# Event tracking
+│   │   └── local_database_service.dart # In-memory DB for dev mode
 │   │
 │   ├── providers/
 │   │   ├── auth_provider.dart    # Auth state
@@ -346,9 +364,9 @@ aimathtest/
 │       ├── avatar_picker.dart
 │       ├── topic_chip.dart
 │       ├── difficulty_slider.dart
-│       ├── number_pad.dart
-│       ├── question_card.dart
-│       ├── progress_bar.dart
+│       ├── math_text.dart          # LaTeX inline rendering ($...$)
+│       ├── feedback_button.dart    # Persistent feedback tab
+│       ├── upgrade_dialog.dart     # Subscription purchase dialog
 │       ├── score_display.dart
 │       └── profile_avatar.dart
 │
