@@ -4,9 +4,10 @@
 AIMathTest is an AI-powered math test generator for kids (K-12). It supports web and Android platforms with Google authentication.
 
 ## Key Documents
+- `.claude/STATUS.md` — **Project status: what's done, what's pending, deployment checklist**
 - `.claude/FEATURES.md` — Complete feature specification
 - `.claude/SCREENS.md` — Screen/page specifications with wireframes
-- `.claude/ARCHITECTURE.md` — Technical architecture
+- `.claude/ARCHITECTURE.md` — Technical architecture (with phase completion tracking)
 
 ## Tech Stack
 - **Frontend**: Flutter (Dart) — single codebase for Android + Web
