@@ -12,50 +12,7 @@ import '../../widgets/topic_chip.dart';
 import '../../providers/subscription_provider.dart';
 import '../../widgets/common/app_button.dart';
 import '../../widgets/feedback_button.dart';
-
-/// Maps raw exceptions to kid/parent-friendly error messages.
-({String message, IconData icon}) _friendlyError(Object error) {
-  final msg = error.toString().toLowerCase();
-  if (msg.contains('socket') ||
-      msg.contains('network') ||
-      msg.contains('clientexception') ||
-      msg.contains('failed host lookup')) {
-    return (
-      message: 'No internet connection. Please check your WiFi and try again.',
-      icon: Icons.wifi_off,
-    );
-  }
-  if (msg.contains('resource-exhausted') || msg.contains('429')) {
-    return (
-      message:
-          'Our math engine is busy right now. Please try again in a minute.',
-      icon: Icons.hourglass_top,
-    );
-  }
-  if (msg.contains('deadline-exceeded') || msg.contains('timeout')) {
-    return (
-      message:
-          'This is taking too long. Please try again with fewer questions.',
-      icon: Icons.timer_off,
-    );
-  }
-  if (msg.contains('unauthenticated') || msg.contains('permission-denied')) {
-    return (
-      message: 'Your session has expired. Please sign out and sign back in.',
-      icon: Icons.lock_outline,
-    );
-  }
-  if (msg.contains('failed-precondition')) {
-    return (
-      message: 'Something went wrong on our end. Please try again shortly.',
-      icon: Icons.error_outline,
-    );
-  }
-  return (
-    message: 'Something went wrong. Please try again.',
-    icon: Icons.error_outline,
-  );
-}
+import '../../helpers/error_helpers.dart';
 
 class TestConfigScreen extends ConsumerStatefulWidget {
   const TestConfigScreen({super.key});
@@ -147,7 +104,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
     } catch (e, stack) {
       debugPrint('Test generation error: $e\n$stack');
       if (mounted) {
-        final err = _friendlyError(e);
+        final err = friendlyError(e);
         await showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
