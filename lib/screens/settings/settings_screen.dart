@@ -395,7 +395,7 @@ class _SubscriptionCard extends ConsumerWidget {
             title: const Text('Free Plan',
                 style: TextStyle(fontWeight: FontWeight.w600)),
             subtitle: Text(
-              '$remaining of ${AppConstants.freeTestMonthlyLimit} generations remaining this month',
+              '$remaining of ${AppConstants.freeTestMonthlyLimit} test generations remaining this month',
             ),
           ),
           ListTile(
