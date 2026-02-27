@@ -53,6 +53,13 @@ class AppConstants {
   static const int maxRecentTests = 5;
   static const int recentAttemptsForAI = 20;
 
+  // Admin accounts — bypass free tier limit
+  static const Set<String> adminEmails = {
+    'manish.dce@gmail.com',
+    'nupzbansal@gmail.com',
+    'numerixlabs@gmail.com',
+  };
+
   // Subscription
   static const int freeTestMonthlyLimit = 10;
   static const String monthlyProductId = 'premium_monthly';
