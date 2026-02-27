@@ -50,23 +50,33 @@ class FeedbackButton extends ConsumerWidget {
   }
 
   void _showFeedbackDialog(BuildContext context, WidgetRef ref) {
+    showFeedbackDialog(context, ref);
+  }
+
+  /// Open the feedback dialog from anywhere. Optional [initialMessage] pre-fills the text.
+  static void showFeedbackDialog(BuildContext context, WidgetRef ref,
+      {String? initialMessage}) {
     showDialog(
       context: context,
-      builder: (_) => _FeedbackDialog(ref: ref),
+      builder: (_) =>
+          _FeedbackDialog(ref: ref, initialMessage: initialMessage),
     );
   }
 }
 
 class _FeedbackDialog extends StatefulWidget {
   final WidgetRef ref;
-  const _FeedbackDialog({required this.ref});
+  final String? initialMessage;
+  const _FeedbackDialog({required this.ref, this.initialMessage});
 
   @override
   State<_FeedbackDialog> createState() => _FeedbackDialogState();
 }
 
 class _FeedbackDialogState extends State<_FeedbackDialog> {
-  final _messageController = TextEditingController();
+  late final _messageController = TextEditingController(
+    text: widget.initialMessage,
+  );
   int _rating = 0;
   bool _submitting = false;
 
