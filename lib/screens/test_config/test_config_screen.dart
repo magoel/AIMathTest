@@ -45,7 +45,7 @@ class _TestConfigScreenState extends ConsumerState<TestConfigScreen> {
       final isPremium = ref.read(isPremiumProvider);
       if (!isPremium) {
         final db = ref.read(databaseServiceProvider);
-        final monthCount = await db.getMonthTestCount(user.uid, profile.id);
+        final monthCount = await db.getMonthTestCount(user.uid);
         if (monthCount >= AppConstants.freeTestMonthlyLimit) {
           if (mounted) {
             await showDialog(

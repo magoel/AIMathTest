@@ -51,3 +51,11 @@ final attemptsProvider = StreamProvider<List<AttemptModel>>((ref) {
   final db = ref.read(databaseServiceProvider);
   return db.attemptsStream(user.uid, profile.id);
 });
+
+final monthGenerationCountProvider = FutureProvider<int>((ref) async {
+  final authState = ref.watch(authStateProvider);
+  final user = authState.valueOrNull;
+  if (user == null) return 0;
+  final db = ref.read(databaseServiceProvider);
+  return db.getMonthTestCount(user.uid);
+});

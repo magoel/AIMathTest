@@ -148,8 +148,8 @@ class FirebaseDatabaseWrapper extends LocalDatabaseService {
       _fb.getTodayAttemptCount(parentId, profileId);
 
   @override
-  Future<int> getMonthTestCount(String parentId, String profileId) =>
-      _fb.getMonthTestCount(parentId, profileId);
+  Future<int> getMonthTestCount(String parentId) =>
+      _fb.getMonthTestCount(parentId);
 
   @override
   Future<void> saveFeedback(FeedbackModel feedback) =>

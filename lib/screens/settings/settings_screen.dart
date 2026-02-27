@@ -354,7 +354,6 @@ class _SubscriptionCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isPremium = ref.watch(isPremiumProvider);
     final userAsync = ref.watch(userProvider);
-    final attemptsAsync = ref.watch(attemptsProvider);
     final billingAvailable = ref.watch(billingAvailableProvider);
     final canUpgrade = billingAvailable.valueOrNull ?? false;
 
@@ -383,15 +382,7 @@ class _SubscriptionCard extends ConsumerWidget {
       );
     }
 
-    final monthUsed = attemptsAsync.whenOrNull(data: (attempts) {
-      final now = DateTime.now();
-      final startOfMonth = DateTime(now.year, now.month, 1);
-      final uniqueTests = attempts
-          .where((a) => a.completedAt.isAfter(startOfMonth))
-          .map((a) => a.testId)
-          .toSet();
-      return uniqueTests.length;
-    }) ?? 0;
+    final monthUsed = ref.watch(monthGenerationCountProvider).valueOrNull ?? 0;
     final remaining = (AppConstants.freeTestMonthlyLimit - monthUsed)
         .clamp(0, AppConstants.freeTestMonthlyLimit);
 
@@ -399,50 +390,31 @@ class _SubscriptionCard extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.diamond_outlined, size: 20),
-                    const SizedBox(width: 8),
-                    const Text('Free Plan',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$remaining of ${AppConstants.freeTestMonthlyLimit} tests remaining this month',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                ),
-              ],
+          ListTile(
+            leading: const Icon(Icons.diamond_outlined),
+            title: const Text('Free Plan',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text(
+              '$remaining of ${AppConstants.freeTestMonthlyLimit} generations remaining this month',
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Upgrade to Premium for unlimited tests:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '  \u2022  Monthly: \u20B950/month\n'
-                  '  \u2022  Annual: \u20B9500/year (save 17%)',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+          ListTile(
+            dense: true,
+            title: Text(
+              'Upgrade to Premium for unlimited tests:',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+                fontSize: 13,
+              ),
+            ),
+            subtitle: Text(
+              '\u2022 Monthly: \u20B950/month\n'
+              '\u2022 Annual: \u20B9500/year (save 17%)',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 13,
+              ),
             ),
           ),
           if (canUpgrade)

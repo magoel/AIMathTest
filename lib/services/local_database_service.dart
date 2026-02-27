@@ -193,17 +193,14 @@ class LocalDatabaseService {
         .length;
   }
 
-  Future<int> getMonthTestCount(String parentId, String profileId) async {
+  Future<int> getMonthTestCount(String parentId) async {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
-    final uniqueTests = _attempts
-        .where((a) =>
-            a.parentId == parentId &&
-            a.profileId == profileId &&
-            a.completedAt.isAfter(startOfMonth))
-        .map((a) => a.testId)
-        .toSet();
-    return uniqueTests.length;
+    return _tests.values
+        .where((t) =>
+            t.createdBy.parentId == parentId &&
+            !t.createdAt.isBefore(startOfMonth))
+        .length;
   }
 
   Future<void> saveFeedback(FeedbackModel feedback) async {

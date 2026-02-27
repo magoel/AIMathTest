@@ -165,18 +165,15 @@ class DatabaseService {
     return snapshot.docs.length;
   }
 
-  Future<int> getMonthTestCount(String parentId, String profileId) async {
+  Future<int> getMonthTestCount(String parentId) async {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
     final snapshot = await _db
-        .collection('attempts')
-        .where('parentId', isEqualTo: parentId)
-        .where('profileId', isEqualTo: profileId)
-        .where('completedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+        .collection('tests')
+        .where('createdBy.parentId', isEqualTo: parentId)
+        .where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
         .get();
-    // Count unique testIds (not attempts — retakes don't count)
-    final uniqueTests = snapshot.docs.map((d) => d.data()['testId']).toSet();
-    return uniqueTests.length;
+    return snapshot.docs.length;
   }
 
   // ── Feedback ──
