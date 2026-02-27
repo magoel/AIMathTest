@@ -52,7 +52,7 @@ final attemptsProvider = StreamProvider<List<AttemptModel>>((ref) {
   return db.attemptsStream(user.uid, profile.id);
 });
 
-final monthGenerationCountProvider = FutureProvider<int>((ref) async {
+final monthGenerationCountProvider = FutureProvider.autoDispose<int>((ref) async {
   final authState = ref.watch(authStateProvider);
   final user = authState.valueOrNull;
   if (user == null) return 0;
