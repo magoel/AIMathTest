@@ -253,9 +253,14 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
       // The AI may output \frac, \sqrt, \times, \theta etc. with single
       // backslashes inside JSON strings. Characters like \f, \b, \t are
       // valid JSON escapes that would be misinterpreted by JSON.parse().
-      // Solution: double-escape ALL \letter sequences so JSON.parse()
+      // Solution: double-escape ALL \letter sequences AND \non-letter
+      // LaTeX sequences (like \, \; \! \{ \}) so JSON.parse()
       // preserves the backslash as a literal character.
+      // Step 1: \letter (e.g., \frac, \times, \theta)
       jsonStr = jsonStr.replace(/\\([a-zA-Z])/g, "\\\\$1");
+      // Step 2: \non-letter that aren't valid JSON escapes (\, \; \! \{ \} etc.)
+      // Excludes: \" \\ \/ (valid JSON escapes) and letters (already handled)
+      jsonStr = jsonStr.replace(/\\([^"a-zA-Z\\\\/])/g, "\\\\$1");
 
       const parsed = JSON.parse(jsonStr);
 
