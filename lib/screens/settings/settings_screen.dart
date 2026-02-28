@@ -128,7 +128,7 @@ class SettingsScreen extends ConsumerWidget {
               title: const Text('Privacy Policy'),
               trailing: const Icon(Icons.open_in_new, size: 18),
               onTap: () => launchUrl(
-                Uri.parse('https://aimathtest-kids-3ca24.web.app/privacy.html'),
+                Uri.parse('${AppConstants.appUrl}/privacy.html'),
                 mode: LaunchMode.externalApplication,
               ),
             ),

@@ -1,6 +1,8 @@
 class AppConstants {
   static const String appName = 'AIMathTest';
   static const String tagline = 'AI-powered math practice for kids K-12';
+  static const String appDomain = 'aimathtest.numerixlabs.com';
+  static const String appUrl = 'https://aimathtest.numerixlabs.com';
 
   static const List<String> avatars = [
     '🦊', '🐼', '🦁', '🐸', '🦄', '🐶', '🐱', '🐰',

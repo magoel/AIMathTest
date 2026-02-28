@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../config/constants.dart';
 import '../../models/test_model.dart';
 import '../../providers/test_provider.dart';
 import '../../providers/user_provider.dart';
@@ -217,7 +218,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     icon: Icons.share,
                     isOutlined: true,
                     onPressed: () {
-                      final url = 'https://aimathtest-kids-3ca24.web.app/shared/${_test!.shareCode}';
+                      final url = '${AppConstants.appUrl}/shared/${_test!.shareCode}';
                       Share.share('Try this math test!\n$url');
                     },
                   ),
