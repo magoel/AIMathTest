@@ -69,7 +69,10 @@ class _TestTakingScreenState extends ConsumerState<TestTakingScreen> {
       _shuffleOrder = List.generate(_test!.questions.length, (i) => i);
       if (_retakeAttemptId != null) {
         _shuffleOrder.shuffle();
-        ref.read(retakeAttemptIdProvider.notifier).state = null;
+        // Defer provider reset to avoid modifying state during build
+        Future.microtask(() {
+          ref.read(retakeAttemptIdProvider.notifier).state = null;
+        });
       }
 
       _answerController.text = _answers[_currentIndex];

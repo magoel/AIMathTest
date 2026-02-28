@@ -20,7 +20,11 @@ function generateShareCode(): string {
 // ── LaTeX escaping (line 258 of generateTest.ts) ────────────────────────
 
 function escapeLatex(jsonStr: string): string {
-  return jsonStr.replace(/\\([a-zA-Z])/g, "\\\\$1");
+  // Step 1: \letter (e.g., \frac, \times, \theta)
+  jsonStr = jsonStr.replace(/\\([a-zA-Z])/g, "\\\\$1");
+  // Step 2: \non-letter that aren't valid JSON escapes (\, \; \! \{ \} etc.)
+  jsonStr = jsonStr.replace(/\\([^"a-zA-Z\\\\/])/g, "\\\\$1");
+  return jsonStr;
 }
 
 // ── JSON code fence stripping (lines 245-249 of generateTest.ts) ────────
@@ -111,9 +115,33 @@ describe("escapeLatex", () => {
     expect(escapeLatex(input)).toBe(expected);
   });
 
-  it("does NOT escape non-letter backslash sequences like \\{", () => {
-    // \\{ has a brace after the backslash, not a letter — should be untouched
-    expect(escapeLatex("\\{x\\}")).toBe("\\{x\\}");
+  it("escapes non-letter LaTeX sequences like \\{ and \\}", () => {
+    // \\{ and \\} are LaTeX literal braces — must be escaped for JSON
+    expect(escapeLatex("\\{x\\}")).toBe("\\\\{x\\\\}");
+  });
+
+  it("escapes LaTeX thin space \\,", () => {
+    expect(escapeLatex("3\\,000")).toBe("3\\\\,000");
+  });
+
+  it("escapes LaTeX medium space \\;", () => {
+    expect(escapeLatex("a\\;b")).toBe("a\\\\;b");
+  });
+
+  it("escapes LaTeX negative space \\!", () => {
+    expect(escapeLatex("x\\!y")).toBe("x\\\\!y");
+  });
+
+  it("preserves valid JSON escape \\\" (escaped quote)", () => {
+    // \" is a valid JSON escape and must NOT be double-escaped
+    expect(escapeLatex('\\"hello\\"')).toBe('\\"hello\\"');
+  });
+
+  it("preserves valid JSON escape \\\\ (escaped backslash)", () => {
+    // \\\\ in source is \\ in the string — already escaped, the second
+    // \\ is matched by the letter regex if followed by letter
+    // This tests that \\ followed by non-letter is preserved
+    expect(escapeLatex("\\\\")).toBe("\\\\");
   });
 
   it("escapes the second backslash-letter even after another backslash", () => {
