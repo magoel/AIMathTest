@@ -211,7 +211,7 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
 
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         generationConfig: {
           responseMimeType: "application/json",
         },
@@ -274,6 +274,58 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
           ...(q.choices ? { choices: q.choices } : {}),
         })
       );
+
+      // ═══ ANSWER VERIFICATION STEP ═══
+      // Send questions back to Gemini to verify mathematical correctness.
+      // This catches LLM hallucinations (e.g., saying 1/4 < 1/5).
+      const verifyPrompt = `You are a math answer verification expert. Check each question and its marked correct answer for mathematical accuracy.
+
+For each question, verify the answer is MATHEMATICALLY CORRECT. For MCQs, verify the correct answer is actually the right choice among the options.
+
+Questions to verify:
+${JSON.stringify(questions.map((q) => ({
+  id: q.id,
+  question: q.question,
+  correctAnswer: q.correctAnswer,
+  choices: q.choices || null,
+})), null, 2)}
+
+Return a JSON array with ONLY the corrections needed. If all answers are correct, return an empty array [].
+Format for corrections: [{"id": "q3", "correctAnswer": "fixed_answer"}]
+
+IMPORTANT:
+- Only return corrections, not confirmations
+- The corrected answer must exactly match one of the choices for MCQs
+- For fill-in-blank, return the simplified numeric answer
+- Return ONLY valid JSON, no markdown fences`;
+
+      try {
+        const verifyResult = await model.generateContent(verifyPrompt);
+        let verifyText = verifyResult.response.text().trim();
+        if (verifyText.startsWith("```")) {
+          verifyText = verifyText
+            .replace(/^```(?:json)?\n?/, "")
+            .replace(/\n?```$/, "");
+        }
+        // Apply LaTeX escaping to verification response too
+        verifyText = verifyText.replace(/\\([a-zA-Z])/g, "\\\\$1");
+        verifyText = verifyText.replace(/\\([^"a-zA-Z\\\\/])/g, "\\\\$1");
+
+        const corrections: { id: string; correctAnswer: string }[] = JSON.parse(verifyText);
+        if (corrections.length > 0) {
+          console.log(`Answer verification found ${corrections.length} correction(s):`, JSON.stringify(corrections));
+          for (const fix of corrections) {
+            const q = questions.find((q) => q.id === fix.id);
+            if (q) {
+              console.log(`  Fixing ${q.id}: "${q.correctAnswer}" → "${fix.correctAnswer}"`);
+              q.correctAnswer = fix.correctAnswer;
+            }
+          }
+        }
+      } catch (verifyErr) {
+        // Verification failed — proceed with original answers rather than blocking
+        console.warn("Answer verification failed, using original answers:", verifyErr);
+      }
 
       // Save test to Firestore
       const testRef = db.collection("tests").doc();
