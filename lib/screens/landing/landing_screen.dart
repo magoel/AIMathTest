@@ -44,16 +44,13 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
           child: Column(
             children: [
               const Spacer(flex: 2),
-              // Logo
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Center(
-                  child: Text('🧮', style: TextStyle(fontSize: 40)),
+              // App icon
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/icon/app_icon.png',
+                  width: 100,
+                  height: 100,
                 ),
               ),
               const SizedBox(height: 24),
