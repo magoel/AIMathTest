@@ -100,7 +100,10 @@ class _SharedTestScreenState extends ConsumerState<SharedTestScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('🧮', style: TextStyle(fontSize: 64)),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset('assets/icon/app_icon.png', width: 80, height: 80),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Shared Test',

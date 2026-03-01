@@ -43,10 +43,13 @@ class MainShell extends ConsumerWidget {
             ],
           ),
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Text('🧮', style: TextStyle(fontSize: 24)),
+            padding: const EdgeInsets.only(right: 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset('assets/icon/app_icon.png', width: 32, height: 32),
+            ),
           ),
         ],
       ),
