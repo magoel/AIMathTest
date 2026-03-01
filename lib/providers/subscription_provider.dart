@@ -43,8 +43,9 @@ final subscriptionProductsProvider =
 /// Admin emails in AppConstants.adminEmails are always treated as premium.
 final isPremiumProvider = Provider<bool>((ref) {
   final authUser = ref.watch(authStateProvider).valueOrNull;
-  if (authUser?.email != null &&
-      AppConstants.adminEmails.contains(authUser!.email!.toLowerCase())) {
+  final email = authUser?.email;
+  if (email != null &&
+      AppConstants.adminEmails.contains(email.toLowerCase())) {
     return true;
   }
   final user = ref.watch(userProvider).valueOrNull;
