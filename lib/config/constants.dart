@@ -70,6 +70,14 @@ class AppConstants {
     monthlyProductId,
     annualProductId,
   };
+
+  // Razorpay (web subscriptions)
+  static const String razorpayKeyId = String.fromEnvironment(
+    'RAZORPAY_KEY_ID',
+    defaultValue: '',
+  );
+  static const String razorpayMonthlyPlanId = 'plan_premium_monthly';
+  static const String razorpayAnnualPlanId = 'plan_premium_annual';
 }
 
 class TopicInfo {

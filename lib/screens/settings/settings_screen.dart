@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -371,11 +372,30 @@ class _SubscriptionCard extends ConsumerWidget {
                 : 'Monthly subscription \u2014 Unlimited tests!',
           ),
           trailing: TextButton(
-            onPressed: () => launchUrl(
-              Uri.parse(
-                  'https://play.google.com/store/account/subscriptions'),
-              mode: LaunchMode.externalApplication,
-            ),
+            onPressed: () {
+              if (kIsWeb) {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Manage Subscription'),
+                    content: const Text(
+                      'To cancel or modify your subscription, please contact us at numerixlabs@gmail.com',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                launchUrl(
+                  Uri.parse('https://play.google.com/store/account/subscriptions'),
+                  mode: LaunchMode.externalApplication,
+                );
+              }
+            },
             child: const Text('Manage'),
           ),
         ),

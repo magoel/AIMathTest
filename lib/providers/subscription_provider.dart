@@ -23,16 +23,17 @@ final subscriptionServiceProvider = Provider<SubscriptionService>((ref) {
 /// Whether billing is available on this platform.
 final billingAvailableProvider = FutureProvider<bool>((ref) async {
   if (!AppConfig.useFirebase) return false;
-  if (kIsWeb) return false;
+  if (kIsWeb) return true; // Web uses Razorpay
   if (!Platform.isAndroid) return false;
 
   final service = ref.read(subscriptionServiceProvider);
   return await service.initialize();
 });
 
-/// Available products from Google Play.
+/// Available products from Google Play (Android only; web uses Razorpay).
 final subscriptionProductsProvider =
     FutureProvider<List<ProductDetails>>((ref) async {
+  if (kIsWeb) return []; // Web uses Razorpay, not Google Play products
   final available = await ref.watch(billingAvailableProvider.future);
   if (!available) return [];
   final service = ref.read(subscriptionServiceProvider);
