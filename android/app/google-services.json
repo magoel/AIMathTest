@@ -12,7 +12,36 @@
           "package_name": "com.aimathtest.aimathtest"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "299048422905-ifd543qua30rch898s29f16cj5btqj6r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aimathtest.aimathtest",
+            "certificate_hash": "4d9ef41f22e6e585d29a57916f82ea6c80eed135"
+          }
+        },
+        {
+          "client_id": "299048422905-ip8d6336q84ncsc585fd65rco3aek9us.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aimathtest.aimathtest",
+            "certificate_hash": "1e7e99627d80697b4c19f0d45f1c0de122ae051b"
+          }
+        },
+        {
+          "client_id": "299048422905-kirbh3dji76c9aac8rpfipuat5rmc0io.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aimathtest.aimathtest",
+            "certificate_hash": "9de422f3b073dd90f34bff5158008f6d289b7072"
+          }
+        },
+        {
+          "client_id": "299048422905-t94mmm6ajnad2v94kr9l9n7dbak8et7o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD_kz5Ewci6f-7iolTTGuGddMkHUhITOBo"
@@ -20,7 +49,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "299048422905-t94mmm6ajnad2v94kr9l9n7dbak8et7o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
