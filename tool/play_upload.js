@@ -94,7 +94,7 @@ async function main() {
       track: track,
       releases: [
         {
-          status: "completed",
+          status: process.argv[4] === "--draft" ? "draft" : "completed",
           versionCodes: [String(versionCode)],
           releaseNotes: [
             {

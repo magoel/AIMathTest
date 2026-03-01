@@ -17,7 +17,9 @@
       "WebFetch(domain:ncert.nic.in)",
       "WebFetch(domain:www.ibo.org)",
       "WebFetch(domain:www.cambridgeinternational.org)",
-      "WebFetch(domain:aimathtest.numerixlabs.com)"
+      "WebFetch(domain:aimathtest.numerixlabs.com)",
+      "mcp__plugin_firebase_firebase__firebase_list_apps",
+      "mcp__plugin_firebase_firebase__firebase_get_sdk_config"
     ]
   },
   "outputStyle": "Explanatory"

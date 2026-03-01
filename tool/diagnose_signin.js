@@ -19,7 +19,7 @@ const { GoogleAuth } = require("google-auth-library");
 
 const PROJECT_ID = "aimathtest-kids-3ca24";
 const PROJECT_NUMBER = "299048422905";
-const APP_ID = "1:299048422905:android:cea4b9bfa6581159368128";
+const APP_ID = "1:299048422905:android:df093ec03eacde2d368128";
 const PACKAGE_NAME = "com.numerixlabs.aimathtest";
 const KEY_FILE = path.join(__dirname, "..", "Keys", "aimathtest-kids-3ca24-399b72c9dbae.json");
 const GOOGLE_SERVICES_PATH = path.join(__dirname, "..", "android", "app", "google-services.json");
