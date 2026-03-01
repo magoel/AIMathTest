@@ -7,34 +7,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:299048422905:android:cea4b9bfa6581159368128",
+        "mobilesdk_app_id": "1:299048422905:android:df093ec03eacde2d368128",
         "android_client_info": {
-          "package_name": "com.aimathtest.aimathtest"
+          "package_name": "com.numerixlabs.aimathtest"
         }
       },
       "oauth_client": [
         {
-          "client_id": "299048422905-ifd543qua30rch898s29f16cj5btqj6r.apps.googleusercontent.com",
+          "client_id": "299048422905-53ffng5dlblfm1c78pfdnqmpkhemifk7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.aimathtest.aimathtest",
+            "package_name": "com.numerixlabs.aimathtest",
+            "certificate_hash": "9de422f3b073dd90f34bff5158008f6d289b7072"
+          }
+        },
+        {
+          "client_id": "299048422905-9phopgs03mur216qvdmaggj97l2kt5ao.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.numerixlabs.aimathtest",
             "certificate_hash": "4d9ef41f22e6e585d29a57916f82ea6c80eed135"
           }
         },
         {
-          "client_id": "299048422905-ip8d6336q84ncsc585fd65rco3aek9us.apps.googleusercontent.com",
+          "client_id": "299048422905-jmr5ggr71sl1qnd1mt9332a0rv206gfm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.aimathtest.aimathtest",
+            "package_name": "com.numerixlabs.aimathtest",
             "certificate_hash": "1e7e99627d80697b4c19f0d45f1c0de122ae051b"
-          }
-        },
-        {
-          "client_id": "299048422905-kirbh3dji76c9aac8rpfipuat5rmc0io.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.aimathtest.aimathtest",
-            "certificate_hash": "9de422f3b073dd90f34bff5158008f6d289b7072"
           }
         },
         {
@@ -44,7 +44,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD_kz5Ewci6f-7iolTTGuGddMkHUhITOBo"
+          "current_key": "AIzaSyBGnz8vGP6rT44NcBxiGeY7t0pDuJP4JtA"
         }
       ],
       "services": {
