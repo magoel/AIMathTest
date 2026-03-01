@@ -35,7 +35,7 @@ export const verifyPurchase = onCall(async (request) => {
     const accessToken = await client.getAccessToken();
 
     // Call Google Play Developer API v2 directly via REST
-    const packageName = "com.aimathtest.aimathtest";
+    const packageName = "com.numerixlabs.aimathtest";
     const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/subscriptionsv2/tokens/${purchaseToken}`;
 
     const response = await fetch(url, {

@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version:*)",
+      "Bash(dart --version:*)",
+      "Bash(winget list:*)",
+      "Bash(winget install:*)",
+      "Bash",
+      "WebFetch(domain:aimathtest-kids-3ca24.web.app)",
+      "WebFetch(domain:github.com)",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "WebSearch",
+      "WebFetch(domain:ncert.nic.in)",
+      "WebFetch(domain:www.ibo.org)",
+      "WebFetch(domain:www.cambridgeinternational.org)",
+      "WebFetch(domain:aimathtest.numerixlabs.com)"
+    ]
+  },
+  "outputStyle": "Explanatory"
+}

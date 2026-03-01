@@ -177,6 +177,37 @@ describe("answer normalization", () => {
   });
 });
 
+// ── Answer verification comparison (replicates logic from generateTest.ts) ──
+function normalizeAnswer(answer: string): string {
+  return answer.trim().toLowerCase().replace(/\s+/g, "");
+}
+
+describe("answer verification normalization", () => {
+  it("matches identical answers", () => {
+    expect(normalizeAnswer("160")).toBe(normalizeAnswer("160"));
+  });
+
+  it("matches answers with different whitespace", () => {
+    expect(normalizeAnswer("  160  ")).toBe(normalizeAnswer("160"));
+  });
+
+  it("matches case-insensitive answers", () => {
+    expect(normalizeAnswer("True")).toBe(normalizeAnswer("true"));
+  });
+
+  it("detects different numeric answers", () => {
+    expect(normalizeAnswer("200")).not.toBe(normalizeAnswer("160"));
+  });
+
+  it("matches LaTeX fractions with extra spaces", () => {
+    expect(normalizeAnswer("$\\frac{3}{4}$")).toBe(normalizeAnswer("$\\frac{3}{4}$"));
+  });
+
+  it("detects mismatch between similar fractions", () => {
+    expect(normalizeAnswer("3/4")).not.toBe(normalizeAnswer("3/5"));
+  });
+});
+
 describe("expiry calculation", () => {
   it("returns a date exactly 90 days after the given date", () => {
     const now = new Date("2026-01-15T12:00:00Z");

@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.aimathtest.aimathtest",
+    "package_name": "com.numerixlabs.aimathtest",
     "sha256_cert_fingerprints": ["6A:D9:04:ED:DC:89:15:4E:9A:1E:54:29:45:0B:8C:82:8D:82:7A:95:5B:B4:3F:ED:97:29:D9:05:98:15:8B:CD"]
   }
 }]

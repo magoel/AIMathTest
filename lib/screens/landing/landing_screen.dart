@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,7 +25,8 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
       } else {
         await ref.read(localAuthServiceProvider).signInWithGoogle();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      developer.log('Sign-in failed', name: 'AIMathTest', error: e, stackTrace: stackTrace);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sign in failed: $e')),

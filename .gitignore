@@ -1,3 +1,11 @@
+# Service account keys
+Keys/
+
+# Root node_modules (for tool scripts)
+/node_modules/
+/package.json
+/package-lock.json
+
 # Miscellaneous
 *.class
 *.log

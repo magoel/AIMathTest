@@ -276,28 +276,32 @@ Answers must be numeric or simple fractions (e.g., "180", "3/4", "0.5"). For MCQ
       );
 
       // ═══ ANSWER VERIFICATION STEP ═══
-      // Send questions back to Gemini to verify mathematical correctness.
-      // This catches LLM hallucinations (e.g., saying 1/4 < 1/5).
-      const verifyPrompt = `You are a math answer verification expert. Check each question and its marked correct answer for mathematical accuracy.
+      // Send questions back to Gemini to independently recompute answers.
+      // Key: Do NOT show the original answer — force blind recomputation
+      // to avoid anchoring bias (LLM agreeing with its own output).
+      const questionsForVerify = questions.map((q) => ({
+        id: q.id,
+        question: q.question,
+        choices: q.choices || null,
+      }));
 
-For each question, verify the answer is MATHEMATICALLY CORRECT. For MCQs, verify the correct answer is actually the right choice among the options.
+      const verifyPrompt = `You are a precise math calculator. Solve each problem below step-by-step, showing your work. Then provide the final answer.
 
-Questions to verify:
-${JSON.stringify(questions.map((q) => ({
-  id: q.id,
-  question: q.question,
-  correctAnswer: q.correctAnswer,
-  choices: q.choices || null,
-})), null, 2)}
+CRITICAL RULES:
+- Solve EVERY problem independently from scratch — show your arithmetic
+- For multiple-choice: pick the correct option from the given choices
+- For fill-in-blank: compute the exact numeric answer
+- Be precise: double-check each arithmetic step before finalizing
+- Answers must be simplified (e.g., "160" not "400-240", "3/4" not "6/8")
+- For MCQs, your answer must exactly match one of the provided choices
 
-Return a JSON array with ONLY the corrections needed. If all answers are correct, return an empty array [].
-Format for corrections: [{"id": "q3", "correctAnswer": "fixed_answer"}]
+Problems:
+${JSON.stringify(questionsForVerify, null, 2)}
 
-IMPORTANT:
-- Only return corrections, not confirmations
-- The corrected answer must exactly match one of the choices for MCQs
-- For fill-in-blank, return the simplified numeric answer
-- Return ONLY valid JSON, no markdown fences`;
+Return a JSON array with your computed answer for EVERY question:
+[{"id": "q1", "computedAnswer": "your_answer", "workings": "brief step-by-step"}, ...]
+
+Return ONLY valid JSON. No markdown fences, no extra text.`;
 
       try {
         const verifyResult = await model.generateContent(verifyPrompt);
@@ -311,17 +315,33 @@ IMPORTANT:
         verifyText = verifyText.replace(/\\([a-zA-Z])/g, "\\\\$1");
         verifyText = verifyText.replace(/\\([^"a-zA-Z\\\\/])/g, "\\\\$1");
 
-        const corrections: { id: string; correctAnswer: string }[] = JSON.parse(verifyText);
-        if (corrections.length > 0) {
-          console.log(`Answer verification found ${corrections.length} correction(s):`, JSON.stringify(corrections));
-          for (const fix of corrections) {
-            const q = questions.find((q) => q.id === fix.id);
-            if (q) {
-              console.log(`  Fixing ${q.id}: "${q.correctAnswer}" → "${fix.correctAnswer}"`);
-              q.correctAnswer = fix.correctAnswer;
+        const verified: { id: string; computedAnswer: string; workings?: string }[] = JSON.parse(verifyText);
+        let fixCount = 0;
+        for (const v of verified) {
+          const q = questions.find((q) => q.id === v.id);
+          if (!q) continue;
+
+          // Normalize for comparison: trim, lowercase, collapse whitespace
+          const orig = q.correctAnswer.trim().toLowerCase().replace(/\s+/g, "");
+          const computed = v.computedAnswer.trim().toLowerCase().replace(/\s+/g, "");
+
+          if (orig !== computed) {
+            // For MCQs, only accept if computed answer matches a choice
+            if (q.choices) {
+              const matchesChoice = q.choices.some(
+                (c) => c.trim().toLowerCase().replace(/\s+/g, "") === computed
+              );
+              if (!matchesChoice) {
+                console.warn(`  ${q.id}: verification computed "${v.computedAnswer}" but doesn't match any choice, keeping original "${q.correctAnswer}"`);
+                continue;
+              }
             }
+            console.log(`  Fixing ${q.id}: "${q.correctAnswer}" → "${v.computedAnswer}" (workings: ${v.workings || "n/a"})`);
+            q.correctAnswer = v.computedAnswer;
+            fixCount++;
           }
         }
+        console.log(`Answer verification complete: ${fixCount} correction(s) out of ${verified.length} questions checked`);
       } catch (verifyErr) {
         // Verification failed — proceed with original answers rather than blocking
         console.warn("Answer verification failed, using original answers:", verifyErr);

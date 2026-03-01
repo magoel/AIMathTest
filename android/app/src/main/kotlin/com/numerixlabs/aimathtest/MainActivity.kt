@@ -1,4 +1,4 @@
-package com.aimathtest.aimathtest
+package com.numerixlabs.aimathtest
 
 import io.flutter.embedding.android.FlutterActivity
 
