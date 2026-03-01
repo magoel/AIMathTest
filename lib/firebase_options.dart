@@ -60,8 +60,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD_kz5Ewci6f-7iolTTGuGddMkHUhITOBo',
-    appId: '1:299048422905:android:cea4b9bfa6581159368128',
+    apiKey: 'AIzaSyBGnz8vGP6rT44NcBxiGeY7t0pDuJP4JtA',
+    appId: '1:299048422905:android:df093ec03eacde2d368128',
     messagingSenderId: '299048422905',
     projectId: 'aimathtest-kids-3ca24',
     storageBucket: 'aimathtest-kids-3ca24.firebasestorage.app',
